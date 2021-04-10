@@ -4,7 +4,7 @@ import asyncio
 import discord
 import os
 from discord.ext import commands
-from typing import Awaitable, Callable, Optional, Union
+from typing import Any, Awaitable, Callable, Optional, Union
 from .help_command import HelpCommand
 from .cogs.meta import *
 from .utils import *
@@ -100,12 +100,13 @@ class DiscordBot(commands.Bot):
         try:
             with open(token, "r") as file:
                 token = file.readlines()[0].strip()
-        except (FileNotFoundError, PermissionError, FileExistsError):
+        except (FileNotFoundError, PermissionError, FileExistsError) as e:
+            print(f"Assuming raw token passed - could not find token file due to an error: \"{e.__class__.__name__}\"")
             token = token
 
         try:
             super().run(token)
-        except (aiohttp.ClientConnectorError, discord.HTTPException) as e:
+        except (aiohttp.ClientConnectorError, discord.HTTPException, discord.LoginFailure) as e:
             print(f"Unable to start bot: \"{type(e)}\" - \"{e}\"")
 
     async def paginate(
@@ -184,7 +185,7 @@ class DiscordBot(commands.Bot):
             raise ValueError("Invalid Color type. Must be discord.Color, RGB tuple, or hex string")
     
     @staticmethod
-    async def _retrieve_entity(snowflake: int, func: Callable[[int]], coro: Awaitable[int]):
+    async def _retrieve_entity(snowflake: int, func: Callable[[int], Any], coro: Awaitable[int]):
         """Lazily retrieves a discord object from a given discord id
         
         This function is moreso designed to be a helper function for other `retrieve_X` coroutines,
