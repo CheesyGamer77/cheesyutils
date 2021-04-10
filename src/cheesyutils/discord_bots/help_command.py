@@ -17,8 +17,8 @@ class HelpCommand(commands.HelpCommand):
         embed = get_base_embed(
             title="Help",
             color=self.color,
-            author=ctx.bot.user,
-            footer_icon=ctx.bot.user.avatar_url,
+            author=ctx.me,
+            footer_icon=ctx.me,
             footer_text=f"Run {self.clean_prefix}help <command> to get more information about a command or command group"
         )
 
@@ -37,8 +37,8 @@ class HelpCommand(commands.HelpCommand):
             title=f"Command Help: {command.name}",
             description=command.help if command.help is not None else "None",
             color=self.color,
-            author=ctx.bot.user,
-            footer_icon=ctx.bot.user.avatar_url,
+            author=ctx.me,
+            footer_icon=ctx.me,
             footer_text=f"Run {self.clean_prefix}help <command> to get more information about a command or command group"
         )
 
@@ -69,15 +69,15 @@ class HelpCommand(commands.HelpCommand):
             title=f"Group Help: {group.name}",
             description=group.help,
             color=self.color,
-            author=ctx.bot.user,
-            footer_icon=ctx.bot.user.avatar_url,
+            author=ctx.me,
+            footer_icon=ctx.me,
             footer_text=f"Run {self.clean_prefix}help <command> to get more information about a command or command group"
         )
 
         if len(group.aliases) > 0:
             embed.add_field(
                 name="Aliases",
-                value=", ".join([alias for alias in group.aliases]),
+                value=", ".join([f"`{alias}`" for alias in group.aliases]),
                 inline=False
             )
 
@@ -116,8 +116,8 @@ class HelpCommand(commands.HelpCommand):
             title=f"Cog Help: {cog.qualified_name}",
             description=cog.description,
             color=self.color,
-            author=ctx.bot.user,
-            footer_icon=ctx.bot.user.avatar_url,
+            author=ctx.me,
+            footer_icon=ctx.me,
             footer_text=f"Run {self.clean_prefix}help <command> to get more information about a command or command group"
         )
 
@@ -125,7 +125,7 @@ class HelpCommand(commands.HelpCommand):
         if len(cmds) > 0:
             embed.add_field(
                 name="Commands",
-                value=", ".join(sorted([command.name for command in cmds])),
+                value=", ".join(sorted([f"{command.name}`" for command in cmds])),
                 inline=False
             )
         
@@ -152,7 +152,7 @@ class HelpCommand(commands.HelpCommand):
             embed = get_base_embed(
                 title="Error",
                 description=str(error),
-                author=self.context.bot.user
+                author=ctx.me
             )
             await ctx.send(embed=embed)
         else:

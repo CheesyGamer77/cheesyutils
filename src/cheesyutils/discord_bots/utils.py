@@ -4,26 +4,30 @@ from discord.ext import commands
 from typing import List, Optional, Union
 
 
-def get_image_url(entity: Union[discord.User, discord.Guild, str]):
+def get_image_url(entity: Union[discord.abc.User, discord.Guild, discord.Asset, str]):
     """Returns an image url depending on if the desired entity is a User, Guild, or string
 
     Parameters
     ----------
-    entity : Union(discord.User, discord.Guild, str)
-        The entity to get the image from
+    entity : Union(discord.abc.User, discord.Guild, discord.Asset, str)
+        The entity to get the image url from
     
     Returns
     -------
     The image url as a string, or the entity itself if its already a string
     """
-    if isinstance(entity, (discord.User, discord.Guild, str)):
-        if isinstance(entity, discord.User):
-            return entity.avatar_url
+
+    if isinstance(entity, (discord.abc.User, discord.Guild, discord.Asset, str)):
+        if isinstance(entity, discord.abc.User):
+            return str(entity.avatar_url)
         elif isinstance(entity, discord.Guild):
-            return entity.icon_url
+            return str(entity.icon_url)
+        elif isinstance(entity, discord.Asset):
+            return str(entity)
+
         return entity
     else:
-        raise TypeError(f"Expected discord.User, discord.Guild, or string, got \"{entity.__class__.__name__}\" instead")
+        raise TypeError(f"Expected discord.abc.User, discord.Guild, or string, got \"{entity.__class__.__name__}\" instead")
 
 
 def truncate(string: str, max_length: int, end: Optional[str] = "...") -> str:
@@ -85,15 +89,15 @@ def get_base_embed(
     description: Optional[str] = discord.Embed.Empty,
     color: Optional[discord.Color] = discord.Embed.Empty,
     timestamp: Optional[datetime.datetime] = datetime.datetime.utcnow(),
-    author: Optional[Union[discord.User, discord.Guild]] = None,
+    author: Optional[Union[discord.abc.User, discord.Guild]] = None,
     author_name: Optional[str] = None,
-    author_icon: Optional[Union[discord.User, discord.Guild, str]] = discord.Embed.Empty,
+    author_icon: Optional[Union[discord.abc.User, discord.Guild, str]] = discord.Embed.Empty,
     author_url: Optional[str] = discord.Embed.Empty,
-    thumbnail: Optional[Union[discord.User, discord.Guild, str]] = None,
-    image: Optional[Union[discord.User, discord.Guild, str]] = None,
-    footer: Optional[Union[discord.User, discord.Guild]] = None,
+    thumbnail: Optional[Union[discord.abc.User, discord.Guild, str]] = None,
+    image: Optional[Union[discord.abc.User, discord.Guild, str]] = None,
+    footer: Optional[Union[discord.abc.User, discord.Guild]] = None,
     footer_text: Optional[str] = discord.Embed.Empty,
-    footer_icon: Optional[Union[discord.User, discord.Guild, str]] = discord.Embed.Empty,
+    footer_icon: Optional[Union[discord.abc.User, discord.Guild, str]] = discord.Embed.Empty,
     url: Optional[str] = discord.Embed.Empty,
 ) -> discord.Embed:
     """Returns a "base" embed without any fields
@@ -110,7 +114,7 @@ def get_base_embed(
         The color to use for the embed
     timestamp : Optional datetime.datetime
         The utc timestamp to use for the embed (defaults to the current utc timestamp)
-    author : Optional Union(discord.User, discord.Guild)
+    author : Optional Union(discord.abc.User, discord.Guild)
         The user or guild to use for the embed author name/icon. This overrides both `author_name` and `author_icon`
     author_name : Optional str
         The string to use for the embed author name
@@ -118,11 +122,11 @@ def get_base_embed(
         The url to use for the embed author icon
     author_url : Optional str
         The url to use for the embed author (for when the author name is clicked)
-    thumbnail : Optional Union(discord.User, discord.Guild, str)
+    thumbnail : Optional Union(discord.abc.User, discord.Guild, str)
         The url of the image to use for the embed thumbail
-    image : Optional Union(discord.User, discord.Guild, str)
+    image : Optional Union(discord.abc.User, discord.Guild, str)
         The url of the image to use for the embed image
-    footer : Optional Union(discord.User, discord.Guild)
+    footer : Optional Union(discord.abc.User, discord.Guild)
         The user or guild to use for the embed footer text/icon. This overrides both `footer_text` and `footer_icon`
     footer_text : Optional str
         The string to use for the footer text
@@ -156,7 +160,7 @@ def get_base_embed(
     # override author attributes
     if author is not None:
         author_name = str(author)
-        author_icon = author.avatar_url if isinstance(author, discord.User) else author.icon_url
+        author_icon = author.avatar_url if isinstance(author, discord.abc.User) else author.icon_url
     
     # set footer icon
     if footer_icon is not Empty:
@@ -165,7 +169,7 @@ def get_base_embed(
     # override footer attributes
     if footer is not None:
         footer_text = str(footer)
-        footer_icon = footer.avatar_url if isinstance(footer, discord.User) else author.icon_url
+        footer_icon = footer.avatar_url if isinstance(footer, discord.abc.User) else author.icon_url
 
     # truncate neccesary fields
     MAX_TITLE_LENGTH = 256
