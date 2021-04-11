@@ -132,3 +132,10 @@ dmypy.json
 *.db
 
 token.txt
+
+# PyCharm files
+.idea/
+.idea/*
+
+# macOS files
+.DS_Store
