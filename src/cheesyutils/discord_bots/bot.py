@@ -168,21 +168,32 @@ class DiscordBot(commands.Bot):
         else:
             raise ValueError(f"Invalid status string \"{status}\"")
 
-    def get_discord_color(self, color: Union[discord.Color, tuple, str]) -> Optional[discord.Color]:
-        """
-        Returns a discord.Color object from a RGB tuple or hex string
+    def get_discord_color(self, color: Union[discord.Color, tuple, str]) -> discord.Color:
+        """Returns a discord.Color from an RGB tuple or hex string
+        
+        The hex string parsing is case insensitive
+
+        Parameters
+        ----------
+        color: Union(tuple, str)
+
+        Raises
+        ------
+        TypeError if the color was not a discord.Color, tuple, or string
+
+        Returns
+        -------
+        A discord.Color object
         """
 
-        if type(color) is discord.Color:
-            return color
-        elif type(color) is tuple:
-            # assuming it's RGB, cause who the fuck uses HSV
+        if type(color) is tuple:
+            # assuming it's RGB
             return discord.Color.from_rgb(color[0], color[1], color[2])
         elif type(color) is str:
             # code snippet taken from https://stackoverflow.com/a/29643643
             return self.get_discord_color(tuple(int(color.lstrip("#")[i:i + 2], 16) for i in (0, 2, 4)))
         else:
-            raise ValueError("Invalid Color type. Must be discord.Color, RGB tuple, or hex string")
+            raise TypeError("Invalid Color type. Must be discord.Color, RGB tuple, or hex string")
     
     @staticmethod
     async def _retrieve_entity(snowflake: int, func: Callable[[int], Any], coro: Awaitable[int]):
@@ -371,4 +382,3 @@ class DiscordBot(commands.Bot):
                 return None
         else:
             return member
-
