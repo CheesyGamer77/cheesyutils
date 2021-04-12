@@ -23,6 +23,31 @@ class Meta(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
     
+    @staticmethod
+    def _cleanup_code(content: str) -> str:
+        """Automatically removes code blocks from the code.
+
+        This is just used for the `execute` command at this time
+        
+        Parameters
+        ----------
+        content : str
+            The content to remove code blocks from
+        
+        Returns
+        -------
+        The cleaned content as a string
+        """
+
+        # remove \`\`\`py\n\`\`\`
+        if content.startswith('```') and content.endswith('```'):
+            if content[-4] == '\n':
+                return '\n'.join(content.split('\n')[1:-1])
+            return '\n'.join(content.split('\n')[1:]).rstrip('`')
+
+        # remove `foo`
+        return content.strip('` \n')
+
     @commands.is_owner()
     @commands.bot_has_permissions(send_messages=True)
     @commands.command()
