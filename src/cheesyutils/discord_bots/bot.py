@@ -82,7 +82,7 @@ class DiscordBot(commands.Bot):
     
     async def on_ready(self):
         print(f"{self.user} is ready!")
-
+    
     def run(self, token: Union[os.PathLike, str]):
         """Starts the bot
 
