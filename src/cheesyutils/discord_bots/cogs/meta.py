@@ -1,5 +1,6 @@
 import datetime
 import discord
+from cheesyutils.discord_bots import DiscordBot
 from contextlib import redirect_stdout
 from discord.ext import commands
 from io import StringIO
@@ -20,7 +21,7 @@ class Meta(commands.Cog):
     Default commands and listeners and stuffs
     """
 
-    def __init__(self, bot):
+    def __init__(self, bot: DiscordBot):
         self.bot = bot
     
     @staticmethod
@@ -135,6 +136,25 @@ class Meta(commands.Cog):
         """
 
         pass
+
+    @commands.is_owner()
+    @commands.bot_has_permissions(send_messages=True)
+    @_cog_group.command()
+    async def _cog_list_command(self, ctx: commands.Context):
+        """
+        Lists all cogs currently running on the bot
+        """
+
+        await self.bot.paginate(
+            ctx,
+            "Cog List",
+            "`{0}`",
+            list(self.bot.cogs.keys()),
+            max_page_size=1024,
+            sequence_type_name="cogs",
+            author_name=str(self.bot.user),
+            author_icon_url=self.bot.user.avatar_url
+        )
 
     @commands.is_owner()
     @commands.bot_has_permissions(send_messages=True)
