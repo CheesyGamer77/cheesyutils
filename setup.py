@@ -9,7 +9,7 @@ with open("README.md", "r", encoding="utf-8") as fh:
 
 setuptools.setup(
     name="cheesyutils",
-    version="0.0.4",
+    version="0.0.5",
     author="CheesyGamer77",
     description="A python package of miscelanious utilities",
     long_description=long_description,
