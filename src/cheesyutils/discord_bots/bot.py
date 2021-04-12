@@ -300,7 +300,7 @@ class DiscordBot(commands.Bot):
             The Discord ID of the channel where the message you wish to retrieve is located
         message_id : Optional int
             The Discord ID of the message you wish to retrieve
-        message_ink : Optional str
+        message_link : Optional str
             The url of the message link for the message you wish to retrieve
             Note that if this parameter is supplied, this method is called again
             using the channel/message id extracted from the url
