@@ -118,12 +118,12 @@ def get_base_embed(
         The user or guild to use for the embed author name/icon. This overrides both `author_name` and `author_icon`
     author_name : Optional str
         The string to use for the embed author name
-    author_icon: Optional str
+    author_icon : Optional str
         The url to use for the embed author icon
     author_url : Optional str
         The url to use for the embed author (for when the author name is clicked)
     thumbnail : Optional Union(discord.abc.User, discord.Guild, str)
-        The url of the image to use for the embed thumbail
+        The url of the image to use for the embed thumbnail
     image : Optional Union(discord.abc.User, discord.Guild, str)
         The url of the image to use for the embed image
     footer : Optional Union(discord.abc.User, discord.Guild)
@@ -171,7 +171,7 @@ def get_base_embed(
         footer_text = str(footer)
         footer_icon = footer.avatar_url if isinstance(footer, discord.abc.User) else author.icon_url
 
-    # truncate neccesary fields
+    # truncate neccessary fields
     MAX_TITLE_LENGTH = 256
     MAX_DESCRIPTION_LENGTH = 2048
     MAX_FOOTER_TEXT_LENGTH = 2048

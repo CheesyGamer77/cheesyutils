@@ -36,19 +36,19 @@ class DiscordBot(commands.Bot):
             The command prefix for the bot (defaults to ".")
         color : Optional Union(discord.Color, tuple, str)
             The default embed color to use for sending Discord embeds (defaults to `discord.Color.dark_theme()`)
-            This parameter could be a `discord.Color` object, a hexadecimal color code, or an rgb tuple. The color will always
+            This parameter could be a `discord.Color` object, a hexadecimal color code, or an RGB tuple. The color will always
             end up being converted to a `discord.Color` object
         database : Optional str (DEPRECIATED)
             The name of the database file (defaults to "bot.db")
         members_intent : Optional bool
             Whether to requests the `members` Discord API Intent (defaults to False).
             If this is set to true, you will need to ensure your bot has the
-            `members` priviledged intent enabled in the Discord Developer Portal
+            `members` privileged intent enabled in the Discord Developer Portal
         presences_intent : Optional bool
             Whether to request the `presences` Discord API Intent (defaults to False)
             If this is set to true, you will need to ensure your bot has the
-            `presences` priviledged intent enabled in the Discord Developer Portal
-        status: Optional str
+            `presences` privileged intent enabled in the Discord Developer Portal
+        status : Optional str
             The online status to set for the bot (defaults to "online").
             This is case-insensitive and can be "online", "idle", "afk", "dnd", or "invisible"
         activity : Optional str
@@ -279,7 +279,7 @@ class DiscordBot(commands.Bot):
 
         Returns
         -------
-        An discord.abc.GuildChannl for guild-specific channels,
+        An discord.abc.GuildChannel for guild-specific channels,
         or discord.abc.PrivateChannel for user specific channels (dm's),
         or None if the channel could not be retrieved
         """
@@ -390,7 +390,7 @@ class DiscordBot(commands.Bot):
         Parameters
         ----------
         guild : Union(discord.Guild, int)
-            The guild id of the guild or the guild object itsself to retrieve the desired member from.
+            The guild id of the guild or the guild object itself to retrieve the desired member from.
             Note that if a guild id is supplied rather than a guild object, the guild will have to be
             retrieved
         user_id : int
