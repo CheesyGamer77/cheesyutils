@@ -2,7 +2,7 @@ import datetime
 import discord
 from discord.ext import commands
 from typing import List, Optional, Union
-
+from .constants import *
 
 def get_image_url(entity: Union[discord.abc.User, discord.Guild, discord.Asset, str]):
     """Returns an image url depending on if the desired entity is a User, Guild, or string
@@ -172,16 +172,10 @@ def get_base_embed(
         footer_icon = footer.avatar_url if isinstance(footer, discord.abc.User) else author.icon_url
 
     # truncate neccessary fields
-    MAX_TITLE_LENGTH = 256
-    MAX_DESCRIPTION_LENGTH = 2048
-    MAX_FOOTER_TEXT_LENGTH = 2048
-    MAX_AUTHOR_NAME_LENGTH = 256
-    MAX_TOTAL_LENGTH = 6000
-
-    title = truncate(title, MAX_TITLE_LENGTH) if title is not discord.Embed.Empty else discord.Embed.Empty
-    description = truncate(description, MAX_DESCRIPTION_LENGTH) if description is not discord.Embed.Empty else discord.Embed.Empty
-    footer_text = truncate(footer_text, MAX_FOOTER_TEXT_LENGTH) if footer_text is not Empty else Empty
-    author_name = truncate(author_name, MAX_AUTHOR_NAME_LENGTH) if author_name is not None else None
+    title = truncate(title, MAX_EMBED_TITLE_LENGTH) if title is not discord.Embed.Empty else discord.Embed.Empty
+    description = truncate(description, MAX_EMBED_DESCRIPTION_LENGTH) if description is not discord.Embed.Empty else discord.Embed.Empty
+    footer_text = truncate(footer_text, MAX_EMBED_FOOTER_TEXT_LENGTH) if footer_text is not Empty else Empty
+    author_name = truncate(author_name, MAX_EMBED_AUTHOR_NAME_LENGTH) if author_name is not None else None
 
     # construct embed
     embed = discord.Embed(
@@ -216,8 +210,8 @@ def get_base_embed(
         embed.set_image(get_image_url(image))
     
     # check max length
-    if len(embed) > MAX_TOTAL_LENGTH:
-        raise ValueError(f"Base embed character count of {len(embed)} is over limit of {MAX_TOTAL_LENGTH}")
+    if len(embed) > MAX_EMBED_TOTAL_LENGTH:
+        raise ValueError(f"Base embed character count of {len(embed)} is over limit of {MAX_EMBED_TOTAL_LENGTH}")
     
     return embed
 
