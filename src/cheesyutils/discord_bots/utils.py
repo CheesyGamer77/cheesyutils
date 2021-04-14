@@ -5,6 +5,34 @@ from typing import List, Optional, Union
 from .constants import *
 
 
+def get_discord_color(self, color: Union[discord.Color, tuple, str]) -> discord.Color:
+        """Returns a discord.Color from an RGB tuple or hex string
+        
+        The hex string parsing is case insensitive
+
+        Parameters
+        ----------
+        color: Union(tuple, str)
+
+        Raises
+        ------
+        TypeError if the color was not a discord.Color, tuple, or string
+
+        Returns
+        -------
+        A discord.Color object
+        """
+
+        if type(color) is tuple:
+            # assuming it's RGB
+            return discord.Color.from_rgb(color[0], color[1], color[2])
+        elif type(color) is str:
+            # code snippet taken from https://stackoverflow.com/a/29643643
+            return get_discord_color(tuple(int(color.lstrip("#")[i:i + 2], 16) for i in (0, 2, 4)))
+        else:
+            raise TypeError("Invalid Color type. Must be discord.Color, RGB tuple, or hex string")
+
+
 def get_image_url(entity: Union[discord.abc.User, discord.Guild, discord.Asset, str]):
     """Returns an image url depending on if the desired entity is a User, Guild, or string
 
