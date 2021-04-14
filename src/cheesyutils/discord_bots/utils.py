@@ -4,6 +4,7 @@ from discord.ext import commands
 from typing import List, Optional, Union
 from .constants import *
 
+
 def get_image_url(entity: Union[discord.abc.User, discord.Guild, discord.Asset, str]):
     """Returns an image url depending on if the desired entity is a User, Guild, or string
 
