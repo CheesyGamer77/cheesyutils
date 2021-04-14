@@ -6,7 +6,7 @@ import os
 from discord.ext import commands
 from typing import Any, Awaitable, Callable, Optional, Union
 from .help_command import HelpCommand
-from .cogs.meta import *
+from .cogs.meta import Meta
 from .utils import *
 
 class DiscordBot(commands.Bot):
@@ -280,7 +280,7 @@ class DiscordBot(commands.Bot):
         Returns
         -------
         An discord.abc.GuildChannel for guild-specific channels,
-        or discord.abc.PrivateChannel for user specific channels (dm's),
+        or discord.abc.PrivateChannel for user specific channels (DMs),
         or None if the channel could not be retrieved
         """
 
