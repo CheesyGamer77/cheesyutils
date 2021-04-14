@@ -116,7 +116,7 @@ def chunkify_string(string: str, max_length: int) -> List[str]:
 def get_base_embed(
     title: Optional[str] = discord.Embed.Empty,
     description: Optional[str] = discord.Embed.Empty,
-    color: Optional[discord.Color] = discord.Embed.Empty,
+    color: Optional[Union[discord.Color, tuple, str]] = discord.Embed.Empty,
     timestamp: Optional[datetime.datetime] = datetime.datetime.utcnow(),
     author: Optional[Union[discord.abc.User, discord.Guild]] = None,
     author_name: Optional[str] = None,
@@ -139,8 +139,8 @@ def get_base_embed(
         The embed title
     description : Optional str
         The embed description
-    color : Optional discord.Color
-        The color to use for the embed
+    color : Optional Union(discord.Color, tuple, str)
+        The color to use for the embed. Can be a `discord.Color` object, RGB tuple, or hex string
     timestamp : Optional datetime.datetime
         The utc timestamp to use for the embed (defaults to the current utc timestamp)
     author : Optional Union(discord.abc.User, discord.Guild)
@@ -198,7 +198,7 @@ def get_base_embed(
     # override footer attributes
     if footer is not None:
         footer_text = str(footer)
-        footer_icon = footer.avatar_url if isinstance(footer, discord.abc.User) else author.icon_url
+        footer_icon = footer.avatar_url if isinstance(footer, discord.abc.User) else footer.icon_url
 
     # truncate neccessary fields
     title = truncate(title, MAX_EMBED_TITLE_LENGTH) if title is not discord.Embed.Empty else discord.Embed.Empty
@@ -210,7 +210,7 @@ def get_base_embed(
     embed = discord.Embed(
         title=title,
         description=description,
-        color=color,
+        color=get_discord_color(color),
         timestamp=timestamp,
         url=url,
     )
