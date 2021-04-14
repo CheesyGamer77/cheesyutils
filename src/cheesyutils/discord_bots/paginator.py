@@ -1,24 +1,36 @@
 import discord
+import datetime
 from discord.ext import commands
-from typing import Any, Iterator, Optional, Sequence
+from typing import Any, Iterator, Optional, Sequence, Union
+from .constants import MAX_EMBED_TITLE_LENGTH, MAX_EMBED_DESCRIPTION_LENGTH
+from .utils import get_discord_color, get_base_embed
 
 
 class Page:
     """Represents a single page in a paginator
 
-    This class is not normally created manually. See the `Paginator class
-    for your pagination needs
+    This class allows for a little lower level of control in terms of how each page in a
+    paginator is displayed
 
     Parameters
     ----------
-    items : Sequence[any]
+    title : str
+        The title for the page, shown in the page's embed title
+    items : Sequence[Any]
         The sequence to iterate over for the page
     line_sep : Optional str
-        The line separator to join for each line
+        The line separator to join for each line.
+        Defaults to "\\n"
     prefix : Optional str
         The prefix to prepend at the beginning of the page's embed description
+        Defaults to "\`\`\`"
     suffix : Optional str
-        The suffix to append at the end of the page's embed description
+        The suffix to append at the end of the page's embed description.
+        Defaults to "\`\`\`"
+    color : Optional Union(discord.Color, tuple, str)
+        The color to use for the Discord Embed. Can be either a `discord.Color` object,
+        a hexadecimal color string, or an RGB tuple.
+        Defaults to `discord.Color.dark_theme()`
     
     Attributes
     ----------
@@ -26,21 +38,22 @@ class Page:
         The page's Discord Embed that will be sent in Discord for pagination
     """
 
-    def __init__(self, items: Sequence[Any], line_sep: Optional[str] = "\n", prefix: Optional[str] = "```", suffix: Optional[str] = "```"):
-        """Defines a new page for a paginator
-
-        This class is typically not created manually. See the `Paginator` class
-        for your pagination needs
-
-        Parameters
-        ----------
-
-        """
-
-        self.items = items
-        self.line_sep = line_sep
-        self.prefix = prefix
-        self.suffix = suffix
+    def __init__(
+        self,
+        title : str,
+        items: Sequence[Any],
+        line_sep: Optional[str] = "\n",
+        prefix: Optional[str] = "```",
+        suffix: Optional[str] = "```",
+        color: Optional[Union[discord.Color, tuple, str]] = discord.Color.dark_theme(),
+        timestamp: Optional[datetime.datetime] = datetime.datetime.utcnow()
+    ):
+        # TODO: Add parameters for embed author, description, thumbnail, and image customization
+        
+        self.title = title
+        self.description = line_sep.join([prefix, *[item for item in items], suffix])
+        self.color = get_discord_color(color)
+        self.timestamp = timestamp
 
     def __str__(self) -> str:
         """Returns the string to be used for this `Page`'s embed description
@@ -54,9 +67,18 @@ class Page:
 
     @property
     def embed(self) -> discord.Embed:
-        return discord.Embed(
-            title="Page",
-            description=self.line_sep.join([self.prefix, *[item for item in self.items], self.suffix])
+        """Returns the Discord Embed representation for this paginator page
+
+        Returns
+        -------
+        A `discord.Embed` for the page
+        """
+
+        return get_base_embed(
+            title=self.title,
+            description=self.description,
+            color=self.color,
+            timestamp=self.timestamp
         )
 
 
@@ -168,17 +190,13 @@ class Paginator:
         - Manage Messages (for resetting pagination menu button reactions)
         """
 
-        """
-        if other_sequence is None:
-            other_sequence = sequence
-            sequence_type_name = "items" if sequence_type_name is None else sequence_type_name
-        """
-
+        # set emojis
         far_left = "⏮"
         left = '⏪'
         right = '⏩'
         far_right = "⏭"
 
+        # reaction check to be used later
         def predicate(m: discord.Message, set_begin: bool, push_left: bool, push_right: bool, set_end: bool):
             def check(reaction: discord.Reaction, user: discord.User):
                 if reaction.message.id != m.id or user.id == ctx.bot.user.id or user.id != ctx.author.id:
@@ -195,54 +213,11 @@ class Paginator:
                 return False
 
             return check
-        
-        """
-        # init paginator
-        paginator = commands.Paginator(prefix=prefix, suffix=suffix, max_size=max_page_size)
-
-        item_count = 0
-        for item in sequence:
-            item_count += 1
-            if count_format is not None:
-                paginator.add_line(
-                    line=(count_format.format(item_count) + line.format(item))
-                )
-            else:
-                paginator.add_line(
-                    line=line.format(item)
-                )
-        """
 
         index = 0
         message = None
         action = ctx.send
         while True:
-            """
-            # this is probably going to fuck shit up
-            embed = discord.Embed(
-                title=embed_title,
-                description=paginator.pages[index],
-                color=embed_color,
-                timestamp=datetime.datetime.utcnow()
-            )
-
-            if author_name is None:
-                author_name = ctx.guild.name
-            
-            if author_icon_url is None:
-                author_icon_url = ctx.guild.icon_url
-
-            embed.set_author(
-                name=author_name,
-                icon_url=author_icon_url
-            )
-
-            embed.set_footer(
-                text=f"Page {index + 1}/{len(paginator.pages)} • "
-                        f"{len(sequence)}/{len(other_sequence)} {sequence_type_name}"
-            )
-            """
-
             res = await action(embed=self.pages[index].embed)
 
             if res is not None:
@@ -250,7 +225,7 @@ class Paginator:
 
             await message.clear_reactions()
 
-            # determine which emojis should be added
+            # determine which emojis should be added depending on how many pages are left in each direction
             set_begin = index > 1
             push_left = index != 0
             push_right = index != len(self.pages) - 1
@@ -271,6 +246,7 @@ class Paginator:
                 "reaction_add", check=predicate(message, set_begin, push_left, push_right, set_end)
             )
 
+            # set next page index
             if react.emoji == far_left:
                 index = 0
             elif react.emoji == left:
@@ -280,6 +256,7 @@ class Paginator:
             elif react.emoji == far_right:
                 index = len(self.pages) - 1
             else:
+                # invalid reaction, remove it
                 await react.remove(usr)
 
             action = message.edit
