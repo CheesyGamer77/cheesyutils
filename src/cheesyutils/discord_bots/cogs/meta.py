@@ -1,12 +1,10 @@
 import datetime
 import discord
-from cheesyutils.discord_bots import DiscordBot
 from contextlib import redirect_stdout
 from discord.ext import commands
 from io import StringIO
 from textwrap import indent
 from traceback import format_exc
-
 
 class CogConverter(commands.Converter):
     async def convert(self, ctx: commands.Context, argument: str) -> commands.Cog:
@@ -21,7 +19,7 @@ class Meta(commands.Cog):
     Default commands and listeners and stuffs
     """
 
-    def __init__(self, bot: DiscordBot):
+    def __init__(self, bot):
         self.bot = bot
     
     @staticmethod
