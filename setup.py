@@ -7,7 +7,7 @@ with open("requirements.txt", "r") as file:
 
 # Creds to Rapptz <3 https://github.com/Rapptz/discord.py/blob/master/setup.py#L8-L10
 version = ''
-with open("cheesyutils/__init__.py") as f:
+with open("src/cheesyutils/__init__.py") as f:
     version = re.search(r'^__version__\s*=\s*[\'"]([^\'"]*)[\'"]', f.read(), re.MULTILINE).group(1)
 
 with open("README.md", "r", encoding="utf-8") as fh:
