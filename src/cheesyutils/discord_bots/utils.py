@@ -5,7 +5,7 @@ from typing import List, Optional, Union
 from .constants import *
 
 
-def get_discord_color(self, color: Union[discord.Color, tuple, str]) -> discord.Color:
+def get_discord_color(color: Union[discord.Color, tuple, str]) -> discord.Color:
     """Returns a discord.Color from an RGB tuple or hex string
     
     The hex string parsing is case insensitive
