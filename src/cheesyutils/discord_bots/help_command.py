@@ -1,4 +1,3 @@
-import datetime
 import discord
 from discord.ext import commands
 from typing import List, Mapping, Optional
@@ -45,7 +44,7 @@ class HelpCommand(commands.HelpCommand):
         if len(command.aliases) > 0:
             embed.add_field(
                 name="Aliases",
-                value=", ".join([alias for alias in command.aliases]),
+                value=", ".join([f"`{alias}`" for alias in command.aliases]),
                 inline=False
             )
 
@@ -125,7 +124,7 @@ class HelpCommand(commands.HelpCommand):
         if len(cmds) > 0:
             embed.add_field(
                 name="Commands",
-                value=", ".join(sorted([f"{command.name}`" for command in cmds])),
+                value=", ".join(sorted([f"`{command.name}`" for command in cmds])),
                 inline=False
             )
         
@@ -147,7 +146,7 @@ class HelpCommand(commands.HelpCommand):
         embed = self.get_cog_help_embed(self.context, cog)
         await self.get_destination().send(embed=embed)
 
-    async def on_help_command_error(self, ctx, error):
+    async def on_help_command_error(self, ctx: commands.Context, error):
         if isinstance(error, commands.BadArgument):
             embed = get_base_embed(
                 title="Error",
