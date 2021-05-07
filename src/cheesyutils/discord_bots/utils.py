@@ -12,7 +12,7 @@ def get_discord_color(color: Union[discord.Color, tuple, str]) -> discord.Color:
 
     Parameters
     ----------
-    color: Union(tuple, str)
+    color: Union(discord.Color, tuple, str)
 
     Raises
     ------
@@ -29,6 +29,8 @@ def get_discord_color(color: Union[discord.Color, tuple, str]) -> discord.Color:
     elif type(color) is str:
         # code snippet taken from https://stackoverflow.com/a/29643643
         return get_discord_color(tuple(int(color.lstrip("#")[i:i + 2], 16) for i in (0, 2, 4)))
+    elif isinstance(color, (discord.Color, discord.Colour)):
+        return color
     else:
         raise TypeError("Invalid Color type. Must be discord.Color, RGB tuple, or hex string")
 
@@ -101,9 +103,9 @@ def chunkify_string(string: str, max_length: int) -> List[str]:
     Parameters
     ----------
     string : str
-        The string to chunkify
+        The string to slice
     max_length : int
-        The maximum length for each string chunk
+        The maximum length for each string slice
     
     Returns
     -------
@@ -116,7 +118,7 @@ def chunkify_string(string: str, max_length: int) -> List[str]:
 def get_base_embed(
     title: Optional[str] = discord.Embed.Empty,
     description: Optional[str] = discord.Embed.Empty,
-    color: Optional[Union[discord.Color, tuple, str]] = discord.Embed.Empty,
+    color: Optional[Union[discord.Color, tuple, str]] = discord.Color.dark_theme(),
     timestamp: Optional[datetime.datetime] = datetime.datetime.utcnow(),
     author: Optional[Union[discord.abc.User, discord.Guild]] = None,
     author_name: Optional[str] = None,
@@ -140,7 +142,8 @@ def get_base_embed(
     description : Optional str
         The embed description
     color : Optional Union(discord.Color, tuple, str)
-        The color to use for the embed. Can be a `discord.Color` object, RGB tuple, or hex string
+        The color to use for the embed. Can be a `discord.Color` object, RGB tuple, or hex string.
+        Defaults to `discord.Color.dark_theme()`
     timestamp : Optional datetime.datetime
         The utc timestamp to use for the embed (defaults to the current utc timestamp)
     author : Optional Union(discord.abc.User, discord.Guild)
