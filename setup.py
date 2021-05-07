@@ -1,15 +1,21 @@
 import setuptools
+import re
 
 requirements = []
 with open("requirements.txt", "r") as file:
     requirements = file.read().splitlines()
+
+# Creds to Rapptz <3 https://github.com/Rapptz/discord.py/blob/master/setup.py#L8-L10
+version = ''
+with open("src/cheesyutils/__init__.py") as f:
+    version = re.search(r'^__version__\s*=\s*[\'"]([^\'"]*)[\'"]', f.read(), re.MULTILINE).group(1)
 
 with open("README.md", "r", encoding="utf-8") as fh:
     long_description = fh.read()
 
 setuptools.setup(
     name="cheesyutils",
-    version="0.0.10",
+    version=version,
     author="CheesyGamer77",
     description="A python package of miscelanious utilities",
     long_description=long_description,

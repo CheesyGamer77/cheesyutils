@@ -1,8 +1,7 @@
 import discord
 import datetime
 from discord.ext import commands
-from typing import Any, Iterator, Optional, Sequence, Union
-from .constants import MAX_EMBED_TITLE_LENGTH, MAX_EMBED_DESCRIPTION_LENGTH
+from typing import Any, Iterator, NoReturn, Optional, Sequence, Union
 from .utils import get_discord_color, get_base_embed
 
 
@@ -86,7 +85,7 @@ class Paginator:
     def __init__(self):
         self.pages = []
 
-    def insert_page(self, index: int, page: Page):
+    def insert_page_at(self, index: int, page: Page):
         """Inserts a new page at a particular position in the paginator
 
         Prameters
@@ -136,7 +135,7 @@ class Paginator:
 
         Returns
         -------
-        The next `Page`
+        The next `Page` in the pagination sequence
         """
 
         return next(self.pages)
@@ -178,8 +177,7 @@ class Paginator:
 
         self.pages = [Page(item) for item in sequence]
 
-    @commands.bot_has_permissions(send_messages=True, embed_links=True, add_reactions=True, manage_messages=True)
-    async def paginate(self, ctx: commands.Context):
+    async def paginate(self, ctx: commands.Context) -> NoReturn:
         """Starts the paginator in the given context
 
         NOTE: In order to paginate, your bot needs to have the
@@ -294,4 +292,6 @@ class Paginator:
         A `Paginator` with its sequence set to the given sequence
         """
 
-        return cls().set_sequence(sequence)
+        c = cls()
+        c.set_sequence(sequence)
+        return c

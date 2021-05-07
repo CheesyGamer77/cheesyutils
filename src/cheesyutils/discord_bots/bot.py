@@ -3,11 +3,14 @@ import aiosqlite
 import asyncio
 import discord
 import os
+import re
 from discord.ext import commands
 from typing import Any, Awaitable, Callable, Optional, Union
 from .help_command import HelpCommand
-from .cogs.meta import Meta
+from .cogs.meta import Meta, C
 from .utils import *
+from .database import *
+
 
 class DiscordBot(commands.Bot):
     """
@@ -16,14 +19,15 @@ class DiscordBot(commands.Bot):
 
     def __init__(
             self,
-            prefix: Optional[str] = ".",
+            prefix: Optional[Union[str, Callable[[commands.Bot, discord.Message], str]]] = ".",
             color: Optional[Union[discord.Color, tuple, str]] = discord.Color.dark_theme(),
-            database: Optional[str] = None,
+            database: Optional[str] = "bot.db",
             members_intent: Optional[bool] = False,
             presences_intent: Optional[bool] = False,
             status: Optional[str] = "online",
             activity: Optional[str] = None,
             loop: Optional[asyncio.BaseEventLoop] = None,
+            custom_emojis: Optional[dict] = None,
             *args, **kwargs
     ):
         """Defines a new Discord Bot
@@ -32,14 +36,16 @@ class DiscordBot(commands.Bot):
 
         Attributes
         ----------
-        prefix : Optional str
-            The command prefix for the bot (defaults to ".")
+        prefix : Optional Union(str, Callable(commands.Bot, discord.Message)->str)
+            The command prefix for the bot. This may also be a callable function (or coroutine) taking the bot as the first
+            argument and the message context as the second argument, which returns the prefix string.
+            This defaults to "."
         color : Optional Union(discord.Color, tuple, str)
             The default embed color to use for sending Discord embeds (defaults to `discord.Color.dark_theme()`)
             This parameter could be a `discord.Color` object, a hexadecimal color code, or an RGB tuple. The color will always
             end up being converted to a `discord.Color` object
-        database : Optional str (DEPRECIATED)
-            The name of the database file (defaults to "bot.db")
+        database : Optional str
+            The name of the bot's sqlite database file (defaults to "bot.db")
         members_intent : Optional bool
             Whether to requests the `members` Discord API Intent (defaults to False).
             If this is set to true, you will need to ensure your bot has the
@@ -55,6 +61,8 @@ class DiscordBot(commands.Bot):
             The "playing" activity to set for the bot (defaults to "with Cheesy | (PREFIX)help)
         loop : Optional asyncio.BaseEventLoop
             The asyncio event loop to set for the bot (defaults to the value returned by `asyncio.get_event_loop()`)
+        custom_emojis : Optional dict
+            A dictionary who's string key corresponds to a particular Discord emoji string. Used for `Discord.Bot.get_emoji`
         """
 
         self.loop = loop or asyncio.get_event_loop()
@@ -69,6 +77,11 @@ class DiscordBot(commands.Bot):
         if activity is None:
             activity = f"with Cheesy | {prefix}help"
 
+        # set database
+        self.database = Database(database)
+
+        self.is_actually_ready = False
+
         super().__init__(
             command_prefix=commands.when_mentioned_or(prefix),
             intents=intents,
@@ -78,10 +91,16 @@ class DiscordBot(commands.Bot):
             *args, **kwargs
         )
 
+        self.custom_emojis = custom_emojis
+
         self.add_cog(Meta(self))
-    
+
     async def on_ready(self):
-        print(f"{self.user} is ready!")
+        if not self.is_actually_ready:
+            # get current server id's
+            #server_ids = await self.database.query_all(Table("config").sql)
+            self.is_actually_ready = True
+            print(f"{self.user} is ready!")
     
     def run(self, token: Union[os.PathLike, str]):
         """Starts the bot
@@ -108,6 +127,37 @@ class DiscordBot(commands.Bot):
             super().run(token)
         except (aiohttp.ClientConnectorError, discord.HTTPException, discord.LoginFailure) as e:
             print(f"Unable to start bot: \"{type(e)}\" - \"{e}\"")
+
+    def get_emoji(self, id: Union[str, int]) -> Optional[discord.Emoji]:
+        """Returns a Discord Emoji
+
+        This method slightly differs from discord.py's implementation.
+        For starters, the bot will first look inside it's user-defined emoji reference (see `DiscordBot.custom_emojis`).
+        From there, the bot will continue to search for the emoji in it's cache similar to discord.py's implementation
+
+        Parameters
+        ----------
+        id : Union(str, int)
+            The Discord ID OR a key for `DiscordBot.custom_emojis`
+        
+        Returns
+        -------
+        Optional discord.Emoji
+        """
+
+        if isinstance(id, str):
+            # lookup key in the bot's custom emoji key
+            if self.custom_emojis is not None:
+                emoji_str = self.custom_emojis.get(id)
+                
+                if emoji_str is not None:
+                    def extract_emoji_id(emoji: str) -> int:
+                        return int(re.match(r'<a?:[a-zA-Z0-9\_]+:([0-9]+)>$', emoji).group(1))
+
+                    return super().get_emoji(extract_emoji_id(emoji_str))
+
+        # defaults to parent method should the above fail
+        return super().get_emoji(id)
 
     async def paginate(
         self,
@@ -203,7 +253,76 @@ class DiscordBot(commands.Bot):
             return discord.Status.online
         else:
             raise ValueError(f"Invalid status string \"{status}\"")
+        
+    async def _send_emoji_prepended_embed(self, ctx: discord.abc.Messageable, emoji: str, content: str, color: discord.Color):
+        """Sends an embed with an emoji and space both prepended to the left of the desired content to send
+
+        This is mostly here to avoid dupicate code
+
+        Parameters
+        ----------
+        ctx : discord.abc.Messageable
+            The channel, context, or user to send the embed to
+        emoji : str
+            The desired emoji to prepend to `content`
+        content : str
+            The content to send. `emoji` and a space automatically prepended
+            and truncated into the embed description
+        color : discord.Color
+            The color to make the embed
+        """
+
+        embed = get_base_embed(description=f"{emoji} {content}", color=color, timestamp=discord.Embed.Empty)
+        await ctx.send(embed=embed)
+
+    async def send_success_embed(self, ctx: discord.abc.Messageable, content: str):
+        """Sends an embed with a white checkmark emoji and a space prepended to the rest of the content
+
+        The description is automatically truncated to the maximum allowed embed description length
+
+        Parameters
+        ----------
+        ctx : discord.abc.Messageable
+            The channel, context, or user to send the embed to
+        content : str
+            The content to send. There is a ":white_check_mark:" emoji and a space automatically prepended
+            and truncated into the embed description
+        """
+
+        await self._send_emoji_prepended_embed(ctx, ":white_check_mark:", content, discord.Color.green())
+
+    async def send_fail_embed(self, ctx: discord.abc.Messageable, content: str):
+        """Sends an embed with a x emoji and a space prepended to the rest of the content
+
+        The description is automatically truncated to the maximum allowed embed description length
+
+        Parameters
+        ----------
+        ctx : discord.abc.Messageable
+            The channel, context, or user to send the embed to
+        content : str
+            The content to send. There is a ":x:" emoji and a space automatically prepended
+            and truncated into the embed description
+        """
+
+        await self._send_emoji_prepended_embed(ctx, ":x:", content, discord.Color.red())
     
+    async def send_warn_embed(self, ctx: discord.abc.Messageable, content: str):
+        """Sends an embed with a warning emoji and a space prepended to the rest of the content
+
+        The description is automatically truncated to the maximum allowed embed description length
+
+        Parameters
+        ----------
+        ctx : discord.abc.Messageable
+            The channel, context, or user to send the embed to
+        content : str
+            The content to send. There is a ":warning:" emoji and a space automatically prepended
+            and truncated into the embed description
+        """
+
+        await self._send_emoji_prepended_embed(ctx, ":warning:", content, discord.Color.gold())
+
     @staticmethod
     async def _retrieve_entity(snowflake: int, func: Callable[[int], Any], coro: Awaitable[int]):
         """Lazily retrieves a discord object from a given discord id
