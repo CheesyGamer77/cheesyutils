@@ -7,7 +7,7 @@ import re
 from discord.ext import commands
 from typing import Any, Awaitable, Callable, Optional, Union
 from .help_command import HelpCommand
-from .cogs.meta import Meta, C
+from .cogs.meta import Meta
 from .utils import *
 from .database import *
 
