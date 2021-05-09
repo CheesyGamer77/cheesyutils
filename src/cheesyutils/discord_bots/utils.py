@@ -119,7 +119,7 @@ def get_base_embed(
     title: Optional[str] = discord.Embed.Empty,
     description: Optional[str] = discord.Embed.Empty,
     color: Optional[Union[discord.Color, tuple, str]] = discord.Color.dark_theme(),
-    timestamp: Optional[datetime.datetime] = datetime.datetime.utcnow(),
+    timestamp: Optional[Union[datetime.datetime, discord.Member, discord.Object]] = datetime.datetime.utcnow(),
     author: Optional[Union[discord.abc.User, discord.Guild]] = None,
     author_name: Optional[str] = None,
     author_icon: Optional[Union[discord.abc.User, discord.Guild, str]] = discord.Embed.Empty,
@@ -144,8 +144,11 @@ def get_base_embed(
     color : Optional Union(discord.Color, tuple, str)
         The color to use for the embed. Can be a `discord.Color` object, RGB tuple, or hex string.
         Defaults to `discord.Color.dark_theme()`
-    timestamp : Optional datetime.datetime
-        The utc timestamp to use for the embed (defaults to the current utc timestamp)
+    timestamp : Optional Union(datetime.datetime, discord.Member, discord.Object)
+        The utc timestamp, Discord member, or the Discord object to use for the embed.
+        If a `discord.Object` is supplied, the timestamp used will be the object's `created_at` timestamp.
+        If a `discord.Member` is supplied, the timestamp used will be the member's `joined_at` timestamp.
+        This defaults to the current UTC timestamp if none of the above are supplied
     author : Optional Union(discord.abc.User, discord.Guild)
         The user or guild to use for the embed author name/icon. This overrides both `author_name` and `author_icon`
     author_name : Optional str
@@ -184,6 +187,12 @@ def get_base_embed(
     # check if all None
     if title is Empty and description is Empty and color is Empty and author is None and author_name is None and thumbnail is None and image is None and footer is None and footer_text is Empty and footer_icon is Empty and url is None:
         raise ValueError("Cannot construct an empty base embed")
+
+    # convert timestamp to either a Discord member's joined_at or another Discord object's created_at timestamp
+    if isinstance(timestamp, discord.Member):
+        timestamp = timestamp.joined_at
+    elif isinstance(timestamp, discord.Object):
+        timestamp = discord.utils.snowflake_time(timestamp.id)
 
     # set author icon
     if author_icon is not Empty:
