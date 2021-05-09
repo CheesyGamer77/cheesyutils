@@ -351,7 +351,29 @@ class Meta(commands.Cog):
                         )
                     )
                 await ctx.send(text)
-    
+
+    @commands.is_owner()
+    @commands.bot_has_permissions(send_messages=True, embed_links=True)
+    @commands.command(name="stats")
+    async def stats_command(self, ctx: commands.Context):
+        """
+        Display's bot information
+        """
+
+        embed = get_base_embed(
+            title="Bot Stats",
+            author=self.bot
+        )
+
+        embed.add_field(
+            name=f"Libraries",
+            value=f"<:discord_py:840064300923879434> [discord.py](https://github.com/Rapptz/discord.py) - `{discord.__version__}`\n"
+                  f"<:cheese_think:787739437715030066> [cheesyutils](https://github.com/CheesyGamer77/cheesyutils) - `{cheesyutils.__version__}`",
+            inline=False
+        )
+
+        await ctx.send(embed=embed)
+
     @commands.is_owner()
     @commands.command(name="sudo")
     async def sudo_command(self, ctx: commands.Context, channel: Optional[_AnyChannel], user: Union[discord.Member, discord.User], *, command: str):
