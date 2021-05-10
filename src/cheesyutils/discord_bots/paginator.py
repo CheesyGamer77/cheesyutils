@@ -30,6 +30,11 @@ class Page:
         The color to use for the Discord Embed. Can be either a `discord.Color` object,
         a hexadecimal color string, or an RGB tuple.
         Defaults to `discord.Color.dark_theme()`
+    timestamp : Optional Union(datetime.datetime, discord.Member, discord.Object)
+        The timestamp to use for this page's embed. For Discord objects, if a `discord.Member`
+        is passed, the member's timestamp for when they joined the server will be used. For
+        other Discord objects, the object's creation time will be used.
+        This defaults to the current utc timestamp.
     
     Attributes
     ----------
@@ -45,15 +50,21 @@ class Page:
         prefix: Optional[str] = "```",
         suffix: Optional[str] = "```",
         color: Optional[Union[discord.Color, tuple, str]] = discord.Color.dark_theme(),
-        timestamp: Optional[datetime.datetime] = datetime.datetime.utcnow()
+        timestamp: Optional[Union[datetime.datetime, discord.Member, discord.Object]] = datetime.datetime.utcnow()
     ):
         # TODO: Add parameters for embed author, description, thumbnail, and image customization
         
         self.title = title
         self.description = line_sep.join([prefix, *[item for item in items], suffix])
         self.color = get_discord_color(color)
-        self.timestamp = timestamp
 
+        if isinstance(timestamp, discord.Member):
+            timestamp = timestamp.joined_at
+        elif isinstance(timestamp, discord.Object):
+            timestamp = timestamp.created_at
+        
+        self.timestamp = timestamp
+        
     def __str__(self) -> str:
         """Returns the string to be used for this `Page`'s embed description
 
