@@ -236,9 +236,13 @@ def get_base_embed(
         )
     
     # set embed footer
-    if footer_text is not Empty and footer_icon is not Empty:
+    if footer_text is not Empty:
         embed.set_footer(
-            text=footer_text,
+            text=footer_text
+        )
+    
+    if footer_icon is not Empty:
+        embed.set_footer(
             icon_url=footer_icon
         )
     
