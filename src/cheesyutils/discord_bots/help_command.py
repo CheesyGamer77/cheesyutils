@@ -10,7 +10,7 @@ class HelpCommand(commands.HelpCommand):
         super().__init__()
 
     def get_command_signature(self, command: commands.Command):
-        return f"`{self.clean_prefix}{command.qualified_name} {command.signature}".strip() + "`"
+        return f"`" + f"{self.clean_prefix}{command.qualified_name} {command.signature}".strip() + "`"
 
     async def get_bot_help_embed(self, ctx: commands.Context, mapping: Mapping[Optional[commands.Cog], List[commands.Command]]) -> discord.Embed:
         embed = get_base_embed(
