@@ -172,21 +172,45 @@ class Paginator:
 
         return len(self) != 0
 
-    def set_sequence(self, sequence: Sequence[Any]):
-        """Sets the sequence to paginate
+    def set_sequence(self, sequence: Sequence[Any], max_items: int = 10):
+        """Sets the sequence to paginate over
 
-        TODO: This currently assumes that all sequences are two-dimensioned sequences
+        The sequence provided will be spliced into sublists of a maximum size (with thanks to https://stackoverflow.com/a/9671301)
 
         NOTE: This overrrides all of the internal pages set. This means that even if you manually created your own pages
-        using `Paginator.add_page()`, these pages will be overwritten.
+        using `Paginator.add_page()`, those pages will be overwritten.
 
         Parameters
         ----------
         sequence : Sequence(Any)
             The sequence to paginate
+        max_items : int
+            The maximum number of items/lines to have on each page.
+            This defaults to `10`.
         """
 
-        self.pages = [Page(item) for item in sequence]
+        def chunks(l, n):
+            """
+            Converts a sequence to a list of sub-lists of a maximum size
+
+            The code for this function comes from https://stackoverflow.com/a/9671301
+
+            Parameters
+            ----------
+            l : list
+                The list to split into chunks
+            n : int
+                The maximum number of items for each sublist
+
+            Returns
+            -------
+            A list of lists, with each sublist being of maximum size `n`
+            """
+
+            n = max(1, n)
+            return (l[i:i+n] for i in range(0, len(l), n))
+
+        self.pages = [Page(f"Page {i}", chunk) for i, chunk in enumerate(chunks(sequence, max_items))]
 
     async def paginate(self, ctx: commands.Context) -> NoReturn:
         """Starts the paginator in the given context
