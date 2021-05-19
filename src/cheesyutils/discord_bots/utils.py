@@ -119,7 +119,7 @@ def get_base_embed(
     title: Optional[str] = discord.Embed.Empty,
     description: Optional[str] = discord.Embed.Empty,
     color: Optional[Union[discord.Color, tuple, str]] = discord.Color.dark_theme(),
-    timestamp: Optional[Union[datetime.datetime, discord.Member, discord.Object]] = datetime.datetime.utcnow(),
+    timestamp: Optional[Union[datetime.datetime, discord.Member, discord.Object]] = None,
     author: Optional[Union[discord.abc.User, discord.Guild]] = None,
     author_name: Optional[str] = None,
     author_icon: Optional[Union[discord.abc.User, discord.Guild, str]] = discord.Embed.Empty,
@@ -193,6 +193,8 @@ def get_base_embed(
         timestamp = timestamp.joined_at
     elif isinstance(timestamp, discord.Object):
         timestamp = discord.utils.snowflake_time(timestamp.id)
+    elif timestamp is None:
+        timestamp = datetime.datetime.utcnow()
 
     # set author icon
     if author_icon is not Empty:
