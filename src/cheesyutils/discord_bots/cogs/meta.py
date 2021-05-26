@@ -9,7 +9,7 @@ from discord.ext import commands
 from io import StringIO
 from textwrap import indent
 from traceback import format_exc
-from typing import Optional, Union
+from typing import Callable, List, Optional, Union
 from ..utils import get_base_embed, paginate
 
 
@@ -424,7 +424,7 @@ class Meta(commands.Cog):
             ctx,
             embed_title="Cog List",
             line="`{0}`",
-            sequence=list(self.bot.cogs.keys()),
+            sequence=sequence,
             max_page_size=1024,
             sequence_type_name="cogs",
             author_name=str(self.bot.user),
@@ -439,23 +439,18 @@ class Meta(commands.Cog):
         Returns info about a given cog
         """
 
-        embed = discord.Embed(
+        embed = get_base_embed(
             title=f"Cog Info - {cog.qualified_name}",
             description=cog.description if cog.description != "" else "(No Description Provided)",
             color=self.bot.color,
-            timestamp=datetime.datetime.utcnow()
-        )
-
-        embed.set_author(
-            name=str(ctx.bot.user),
-            icon_url=ctx.bot.user.avatar_url
+            author=ctx.bot.user
         )
 
         listeners = cog.get_listeners()
         fmt = ', '.join(sorted([f'`{listener[0]}`' for listener in listeners])) if len(listeners) != 0 else "None"
 
         embed.add_field(
-            name=f"Listeners[{len(listeners)}]",
+            name=f"Event Listeners[{len(listeners)}]",
             value=fmt,
             inline=False
         )
@@ -477,7 +472,7 @@ class Meta(commands.Cog):
         Loads a particular cog
         """
 
-        self.bot.load_extension(cog)
+        await self._execute_extension_actions(ctx, cog, self.bot.load_extension)
         await self.bot.send_success_embed(ctx, f"Cog `{cog}` was loaded!")
     
     @commands.is_owner()
@@ -488,41 +483,45 @@ class Meta(commands.Cog):
         Unloads a particular cog
         """
 
-        self.bot.unload_extension(cog)
+        await self._execute_extension_actions(ctx, cog, self.bot.unload_extension)
         await self.bot.send_success_embed(ctx, f"Cog `{cog}` was unloaded!")
     
     @commands.is_owner()
     @commands.bot_has_permissions(send_messages=True)
     @_cog_group.command(name="reload")
     async def _cog_reload_command(self, ctx: commands.Context, cog: str):
-        self.bot.unload_extension(cog)
-        self.bot.load_extension(cog)
+        await self._execute_extension_actions(ctx, cog, self.bot.unload_extension, self.bot.load_extension)
         await self.bot.send_success_embed(ctx, f"Cog `{cog}` was reloaded!")
 
-    async def _on_cog_commands_error(self, ctx: commands.Context, error):
-        if isinstance(error, commands.ExtensionNotFound):
-            await self.bot.send_fail_embed(ctx, f"Cog `{error.name}` was not found")
-        elif isinstance(error, commands.ExtensionAlreadyLoaded):
-            await self.bot.send_fail_embed(ctx, f"Cog `{error.name}` is already loaded")
-        elif isinstance(error, commands.ExtensionNotLoaded):
-            await self.bot.send_fail_embed(ctx, f"Cog `{error.name}` is already unloaded")
-        elif isinstance(error, commands.NoEntryPointError):
-            await self.bot.send_fail_embed(ctx, f"Cog `{error.name}` is missing `setup` entrypoint")
-        elif isinstance(error, commands.ExtensionFailed):
-            await self.bot.send_fail_embed(ctx, f"Cog {error.name} initiation failed: `{error.original.__class__.__name__}`")
+    async def _execute_extension_actions(self, ctx: commands.Context, cog: str, *funcs: List[Callable[[str], None]]):
+        """Executes a list of extension actions
 
-    @_cog_info_command.error
-    async def on_cog_info_command_error(self, ctx: commands.Context, error):
-        await self._on_cog_commands_error(ctx, error)
+        This is used as a method of abstracting extension error handling away from the cog commands
 
-    @_cog_load_command.error
-    async def on_cog_load_command_error(self, ctx: commands.Context, error):
-        await self._on_cog_commands_error(ctx, error)
-    
-    @_cog_unload_command.error
-    async def on_cog_unload_command_error(self, ctx: commands.Context, error):
-        await self._on_cog_commands_error(ctx, error)
-    
+        Parameters
+        ----------
+        ctx : discord.commands.Context
+            The invocation context
+        cog : str
+            The name of the cog to execute the actions on
+        funcs : List of Callable(str)->None
+            A list of callables, which take in the cog's name, to execute
+        """
+
+        try:
+            for func in funcs:
+                func(cog)
+        except commands.ExtensionNotFound as e:
+            await self.bot.send_fail_embed(ctx, f"Cog `{e.name}` was not found")
+        except commands.ExtensionAlreadyLoaded as e:
+            await self.bot.send_fail_embed(ctx, f"Cog `{e.name}` is already loaded")
+        except commands.ExtensionNotLoaded as e:
+            await self.bot.send_fail_embed(ctx, f"Cog `{e.name}` is already unloaded")
+        except commands.NoEntryPointError as e:
+            await self.bot.send_fail_embed(ctx, f"Cog `{e.name}` is missing `setup` entrypoint")
+        except commands.ExtensionFailed as e:
+            await self.bot.send_fail_embed(ctx, f"Cog `{e.name}` initiation failed: `{e.original.__class__.__name__}`")
+
     @_cog_list_command.error
     async def on_cog_list_command_error(self, ctx: commands.Context, error):
         if isinstance(error, _ConversionFailed):
