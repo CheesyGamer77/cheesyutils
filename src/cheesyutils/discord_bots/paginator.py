@@ -1,102 +1,13 @@
 import discord
-import datetime
 from discord.ext import commands
-from typing import Any, Iterator, NoReturn, Optional, Sequence, Union
-from .utils import get_discord_color, get_base_embed
-
-
-class Page:
-    """Represents a single page in a paginator
-
-    This class allows for a little lower level of control in terms of how each page in a
-    paginator is displayed
-
-    Parameters
-    ----------
-    title : str
-        The title for the page, shown in the page's embed title
-    items : Sequence[Any]
-        The sequence to iterate over for the page
-    line_sep : Optional str
-        The line separator to join for each line.
-        Defaults to "\\n"
-    prefix : Optional str
-        The prefix to prepend at the beginning of the page's embed description
-        Defaults to "\`\`\`"
-    suffix : Optional str
-        The suffix to append at the end of the page's embed description.
-        Defaults to "\`\`\`"
-    color : Optional Union(discord.Color, tuple, str)
-        The color to use for the Discord Embed. Can be either a `discord.Color` object,
-        a hexadecimal color string, or an RGB tuple.
-        Defaults to `discord.Color.dark_theme()`
-    timestamp : Optional Union(datetime.datetime, discord.Member, discord.Object)
-        The timestamp to use for this page's embed. For Discord objects, if a `discord.Member`
-        is passed, the member's timestamp for when they joined the server will be used. For
-        other Discord objects, the object's creation time will be used.
-        This defaults to the current utc timestamp.
-    
-    Attributes
-    ----------
-    embed : discord.Embed
-        The page's Discord Embed that will be sent in Discord for pagination
-    """
-
-    def __init__(
-        self,
-        title : str,
-        items: Sequence[Any],
-        line_sep: Optional[str] = "\n",
-        prefix: Optional[str] = "```",
-        suffix: Optional[str] = "```",
-        color: Optional[Union[discord.Color, tuple, str]] = discord.Color.dark_theme(),
-        timestamp: Optional[Union[datetime.datetime, discord.Member, discord.Object]] = datetime.datetime.utcnow()
-    ):
-        # TODO: Add parameters for embed author, description, thumbnail, and image customization
-        
-        self.title = title
-        self.description = line_sep.join([prefix, *[item for item in items], suffix])
-        self.color = get_discord_color(color)
-
-        if isinstance(timestamp, discord.Member):
-            timestamp = timestamp.joined_at
-        elif isinstance(timestamp, discord.Object):
-            timestamp = timestamp.created_at
-        
-        self.timestamp = timestamp
-        
-    def __str__(self) -> str:
-        """Returns the string to be used for this `Page`'s embed description
-
-        Returns
-        -------
-        This `Page`'s embed description
-        """
-
-        return self.embed.description 
-
-    @property
-    def embed(self) -> discord.Embed:
-        """Returns the Discord Embed representation for this paginator page
-
-        Returns
-        -------
-        A `discord.Embed` for the page
-        """
-
-        return get_base_embed(
-            title=self.title,
-            description=self.description,
-            color=self.color,
-            timestamp=self.timestamp
-        )
+from typing import Any, Iterator, List, NoReturn, Optional, Sequence
 
 
 class Paginator:
     def __init__(self):
-        self.pages = []
+        self.pages: List[discord.Embed] = []
 
-    def insert_page_at(self, index: int, page: Page):
+    def insert_page_at(self, index: int, page: discord.Embed):
         """Inserts a new page at a particular position in the paginator
 
         Prameters
@@ -107,7 +18,7 @@ class Paginator:
 
         self.pages.insert(index, page)
 
-    def prepend_page(self, page: Page):
+    def prepend_page(self, page: discord.Embed):
         """Adds a new page to the beginning of the paginator's pages
 
         Prameters
@@ -118,7 +29,7 @@ class Paginator:
 
         self.pages.insert(0, page)
 
-    def add_page(self, page: Page):
+    def add_page(self, page: discord.Embed):
         """Adds a new page to the end of the paginator's pages
 
         NOTE: Using this method assumes that you will be creating each page manually,
@@ -127,7 +38,7 @@ class Paginator:
 
         self.pages.append(page)
 
-    def __iter__(self) -> Iterator[Page]:
+    def __iter__(self) -> Iterator[discord.Embed]:
         """Returns an interator to iterate through the paginator's pages
 
         Returns
@@ -137,7 +48,7 @@ class Paginator:
 
         return iter(self.pages)
     
-    def __next__(self) -> Optional[Page]:
+    def __next__(self) -> Optional[discord.Embed]:
         """Returns the next page in the paginator
 
         Raises
@@ -171,46 +82,6 @@ class Paginator:
         """
 
         return len(self) != 0
-
-    def set_sequence(self, sequence: Sequence[Any], max_items: int = 10):
-        """Sets the sequence to paginate over
-
-        The sequence provided will be spliced into sublists of a maximum size (with thanks to https://stackoverflow.com/a/9671301)
-
-        NOTE: This overrrides all of the internal pages set. This means that even if you manually created your own pages
-        using `Paginator.add_page()`, those pages will be overwritten.
-
-        Parameters
-        ----------
-        sequence : Sequence(Any)
-            The sequence to paginate
-        max_items : int
-            The maximum number of items/lines to have on each page.
-            This defaults to `10`.
-        """
-
-        def chunks(l, n):
-            """
-            Converts a sequence to a list of sub-lists of a maximum size
-
-            The code for this function comes from https://stackoverflow.com/a/9671301
-
-            Parameters
-            ----------
-            l : list
-                The list to split into chunks
-            n : int
-                The maximum number of items for each sublist
-
-            Returns
-            -------
-            A list of lists, with each sublist being of maximum size `n`
-            """
-
-            n = max(1, n)
-            return (l[i:i+n] for i in range(0, len(l), n))
-
-        self.pages = [Page(f"Page {i}", chunk) for i, chunk in enumerate(chunks(sequence, max_items))]
 
     async def paginate(self, ctx: commands.Context) -> NoReturn:
         """Starts the paginator in the given context
@@ -251,7 +122,7 @@ class Paginator:
         message = None
         action = ctx.send
         while True:
-            res = await action(embed=self.pages[index].embed)
+            res = await action(embed=self.pages[index])
 
             if res is not None:
                 message = res
@@ -295,14 +166,14 @@ class Paginator:
             action = message.edit
 
     @classmethod
-    def from_pages(cls, *pages: Sequence[Page]):
-        """Creates a paginator from a given list of pages
+    def from_embeds(cls, *pages: Sequence[discord.Embed]):
+        """Creates a paginator from a given list of embeds
 
         This allows for more lower level control than `Paginator.from_sequence`
 
         Parameters
         ----------
-        pages : Sequence[Page]
+        pages : Sequence[discord.Embed]
             The list of pages to add to the list
         """
 
@@ -311,22 +182,45 @@ class Paginator:
         return c
 
     @classmethod
-    def from_sequence(cls, sequence: Sequence[Any]):
-        """Creates a default paginator from a given sequence
+    def from_sequence(cls, sequence: Sequence[str], max_lines: int=10):
+        """Sets the sequence to paginate over
 
-        This mainly serves as a shortcut to creating a default `Paginator` object
-        then setting the sequence seperately.
+        The sequence provided will be spliced into sublists of a maximum size (with thanks to https://stackoverflow.com/a/9671301)
 
         Parameters
         ----------
-        sequence : Sequence(Any)
-            The sequence to create the paginator from
-        
-        Returns
-        -------
-        A `Paginator` with its sequence set to the given sequence
+        sequence : Sequence(str)
+            The sequence of strings to paginate through. Each string is given it's own line in the paginator
+        max_items : int
+            The maximum number of items/lines to have on each page.
+            This defaults to `10`.
         """
 
+        def chunks(l, n):
+            """
+            Converts a sequence to a list of sub-lists of a maximum size
+
+            The code for this function comes from https://stackoverflow.com/a/9671301
+
+            Parameters
+            ----------
+            l : list
+                The list to split into chunks
+            n : int
+                The maximum number of items for each sublist
+
+            Returns
+            -------
+            A list of lists, with each sublist being of maximum size `n`
+            """
+
+            n = max(1, n)
+            return (l[i:i+n] for i in range(0, len(l), n))
+
         c = cls()
-        c.set_sequence(sequence)
+        c.pages = [
+            discord.Embed(title=f"Page {i+1}", description="\n".join([line for line in chunk]))
+            for i, chunk in enumerate(chunks(sequence, max_lines))
+        ]
+
         return c
