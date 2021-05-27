@@ -1,7 +1,7 @@
 import discord
 from discord.ext import commands
 from typing import List, Mapping, Optional
-from .utils import get_base_embed
+from .utils import get_base_embed, get_image_url
 
 
 class HelpCommand(commands.HelpCommand):
@@ -16,9 +16,12 @@ class HelpCommand(commands.HelpCommand):
         embed = get_base_embed(
             title="Help",
             color=self.color,
-            author=ctx.me,
-            footer_icon=ctx.me,
-            footer_text=f"Run {self.clean_prefix}help <command> to get more information about a command or command group"
+            author=ctx.me
+        )
+
+        embed.set_footer(
+            text=f"Run {self.clean_prefix}help <command> to get more information about a command or command group",
+            icon_url=get_image_url(ctx.me)
         )
 
         for cog, cog_commands in mapping.items():
