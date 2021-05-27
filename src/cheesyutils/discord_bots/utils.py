@@ -165,7 +165,7 @@ def get_base_embed(
         The user or guild to use for the embed footer text/icon. This overrides both `footer_text` and `footer_icon`
     footer_text : Optional str
         The string to use for the footer text
-    footer_icon : Optional str
+    footer_icon : Optional Union(discord.abc.User, discord.Guild)
         The url to use for the embed footer icon
     url : Optional str
         The url to use for the embed (for when the title is clicked)
@@ -264,19 +264,19 @@ def get_base_embed(
 
 
 async def paginate(
-        ctx: commands.Context,
-        embed_title: str,
-        line: str,
-        sequence: list,
-        embed_color: Optional[discord.Color] = discord.Color.dark_theme(),
-        prefix: Optional[str] = "",
-        suffix: Optional[str] = "",
-        max_page_size: Optional[int] = 2048,
-        other_sequence: Optional[list] = None,
-        sequence_type_name: Optional[str] = None,
-        author_name: Optional[str] = None,
-        author_icon_url: Optional[str] = None,
-        count_format: Optional[str] = None
+    ctx: commands.Context,
+    embed_title: str,
+    line: str,
+    sequence: list,
+    embed_color: Optional[discord.Color] = discord.Color.dark_theme(),
+    prefix: Optional[str] = "",
+    suffix: Optional[str] = "",
+    max_page_size: Optional[int] = 2048,
+    other_sequence: Optional[list] = None,
+    sequence_type_name: Optional[str] = None,
+    author_name: Optional[str] = None,
+    author_icon_url: Optional[str] = None,
+    count_format: Optional[str] = None
 ):
     """Creates a paginating menu given a particular context
 
