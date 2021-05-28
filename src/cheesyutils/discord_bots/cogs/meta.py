@@ -472,8 +472,8 @@ class Meta(commands.Cog):
         Loads a particular cog
         """
 
-        await self._execute_extension_actions(ctx, cog, self.bot.load_extension)
-        await self.bot.send_success_embed(ctx, f"Cog `{cog}` was loaded!")
+        if await self._execute_extension_actions(ctx, cog, self.bot.load_extension):
+            await self.bot.send_success_embed(ctx, f"Cog `{cog}` was loaded!")
     
     @commands.is_owner()
     @commands.bot_has_permissions(send_messages=True, embed_links=True)
@@ -483,15 +483,15 @@ class Meta(commands.Cog):
         Unloads a particular cog
         """
 
-        await self._execute_extension_actions(ctx, cog, self.bot.unload_extension)
-        await self.bot.send_success_embed(ctx, f"Cog `{cog}` was unloaded!")
+        if await self._execute_extension_actions(ctx, cog, self.bot.unload_extension):
+            await self.bot.send_success_embed(ctx, f"Cog `{cog}` was unloaded!")
     
     @commands.is_owner()
     @commands.bot_has_permissions(send_messages=True)
     @_cog_group.command(name="reload")
     async def _cog_reload_command(self, ctx: commands.Context, cog: str):
-        await self._execute_extension_actions(ctx, cog, self.bot.unload_extension, self.bot.load_extension)
-        await self.bot.send_success_embed(ctx, f"Cog `{cog}` was reloaded!")
+        if await self._execute_extension_actions(ctx, cog, self.bot.unload_extension, self.bot.load_extension):
+            await self.bot.send_success_embed(ctx, f"Cog `{cog}` was reloaded!")
 
     async def _execute_extension_actions(self, ctx: commands.Context, cog: str, *funcs: List[Callable[[str], None]]):
         """Executes a list of extension actions
@@ -511,6 +511,7 @@ class Meta(commands.Cog):
         try:
             for func in funcs:
                 func(cog)
+            return True
         except commands.ExtensionNotFound as e:
             await self.bot.send_fail_embed(ctx, f"Cog `{e.name}` was not found")
         except commands.ExtensionAlreadyLoaded as e:
