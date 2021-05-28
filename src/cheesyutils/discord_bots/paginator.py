@@ -1,6 +1,6 @@
 import discord
 from discord.ext import commands
-from typing import Any, Iterator, List, NoReturn, Optional, Sequence
+from typing import Iterator, List, NoReturn, Optional, Sequence
 
 
 class Paginator:
