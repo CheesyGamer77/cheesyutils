@@ -39,9 +39,12 @@ class HelpCommand(commands.HelpCommand):
             title=f"Command Help: {command.name}",
             description=command.help if command.help is not None else "None",
             color=self.color,
-            author=ctx.me,
-            footer_icon=ctx.me,
-            footer_text=f"Run {self.clean_prefix}help <command> to get more information about a command or command group"
+            author=ctx.me
+        )
+
+        embed.set_footer(
+            text=f"Run {self.clean_prefix}help <command> to get more information about a command or command group",
+            icon_url=get_image_url(ctx.me)
         )
 
         if len(command.aliases) > 0:
@@ -71,9 +74,12 @@ class HelpCommand(commands.HelpCommand):
             title=f"Group Help: {group.name}",
             description=group.help,
             color=self.color,
-            author=ctx.me,
-            footer_icon=ctx.me,
-            footer_text=f"Run {self.clean_prefix}help <command> to get more information about a command or command group"
+            author=ctx.me
+        )
+
+        embed.set_footer(
+            text=f"Run {self.clean_prefix}help <command> to get more information about a command or command group",
+            icon_url=get_image_url(ctx.me)
         )
 
         if len(group.aliases) > 0:
@@ -118,9 +124,12 @@ class HelpCommand(commands.HelpCommand):
             title=f"Cog Help: {cog.qualified_name}",
             description=cog.description,
             color=self.color,
-            author=ctx.me,
-            footer_icon=ctx.me,
-            footer_text=f"Run {self.clean_prefix}help <command> to get more information about a command or command group"
+            author=ctx.me
+        )
+
+        embed.set_footer(
+            text=f"Run {self.clean_prefix}help <command> to get more information about a command or command group",
+            icon_url=get_image_url(ctx.me)
         )
 
         cmds = cog.get_commands()
