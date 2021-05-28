@@ -12,8 +12,8 @@ class Paginator:
 
         Prameters
         ---------
-        page : Page
-            The page to insert into the paginator
+        page : discord.Embed
+            The embed to insert into the paginator
         """
 
         self.pages.insert(index, page)
@@ -23,8 +23,8 @@ class Paginator:
 
         Prameters
         ---------
-        page : Page
-            The page to add to the beginning of the paginator
+        page : discord.Embed
+            The embed to add to the beginning of the paginator
         """
 
         self.pages.insert(0, page)
@@ -43,7 +43,7 @@ class Paginator:
 
         Returns
         -------
-        An iterator of `Page`s
+        An iterator of `discord.Embed`s
         """
 
         return iter(self.pages)
@@ -57,7 +57,7 @@ class Paginator:
 
         Returns
         -------
-        The next `Page` in the pagination sequence
+        The next `discord.Embed` in the pagination sequence
         """
 
         return next(self.pages)
