@@ -92,78 +92,87 @@ class Paginator:
         - Embed Links
         - Add Reactions
         - Manage Messages (for resetting pagination menu button reactions)
+
+        If any of the above permissions are missing, this coroutine is exited silently
+
+        Parameters
+        ----------
+        ctx : discord.commands.Context
+            The invocation context
         """
 
-        # set emojis
-        far_left = "⏮"
-        left = '⏪'
-        right = '⏩'
-        far_right = "⏭"
+        permissions: discord.Permissions = ctx.me.permissions_in(ctx.channel)
+        if permissions.add_reactions and permissions.embed_links and permissions.send_messages and permissions.manage_messages:
+            # set emojis
+            far_left = "⏮"
+            left = '⏪'
+            right = '⏩'
+            far_right = "⏭"
 
-        # reaction check to be used later
-        def predicate(m: discord.Message, set_begin: bool, push_left: bool, push_right: bool, set_end: bool):
-            def check(reaction: discord.Reaction, user: discord.User):
-                if reaction.message.id != m.id or user.id == ctx.bot.user.id or user.id != ctx.author.id:
+            # reaction check to be used later
+            def predicate(m: discord.Message, set_begin: bool, push_left: bool, push_right: bool, set_end: bool):
+                def check(reaction: discord.Reaction, user: discord.User):
+                    if reaction.message.id != m.id or user.id == ctx.bot.user.id or user.id != ctx.author.id:
+                        return False
+                    if set_begin and reaction.emoji == far_left:
+                        return True
+                    if push_left and reaction.emoji == left:
+                        return True
+                    if push_right and reaction.emoji == right:
+                        return True
+                    if set_end and reaction.emoji == far_right:
+                        return True
+
                     return False
-                if set_begin and reaction.emoji == far_left:
-                    return True
-                if push_left and reaction.emoji == left:
-                    return True
-                if push_right and reaction.emoji == right:
-                    return True
-                if set_end and reaction.emoji == far_right:
-                    return True
 
-                return False
+                return check
 
-            return check
+            index = 0
+            message = None
+            action = ctx.send
+            while True:
+                res = await action(embed=self.pages[index])
 
-        index = 0
-        message = None
-        action = ctx.send
-        while True:
-            res = await action(embed=self.pages[index])
+                if res is not None:
+                    message = res
 
-            if res is not None:
-                message = res
+                await message.clear_reactions()
 
-            await message.clear_reactions()
+                # determine which emojis should be added depending on how many pages are left in each direction
+                set_begin = index > 1
+                push_left = index != 0
+                push_right = index != len(self.pages) - 1
+                set_end = index < len(self.pages) - 2
 
-            # determine which emojis should be added depending on how many pages are left in each direction
-            set_begin = index > 1
-            push_left = index != 0
-            push_right = index != len(self.pages) - 1
-            set_end = index < len(self.pages) - 2
+                # add the appropriate emojis
+                if set_begin:
+                    await message.add_reaction(far_left)
+                if push_left:
+                    await message.add_reaction(left)
+                if push_right:
+                    await message.add_reaction(right)
+                if set_end:
+                    await message.add_reaction(far_right)
 
-            # add the appropriate emojis
-            if set_begin:
-                await message.add_reaction(far_left)
-            if push_left:
-                await message.add_reaction(left)
-            if push_right:
-                await message.add_reaction(right)
-            if set_end:
-                await message.add_reaction(far_right)
+                # wait for reaction and set page index
+                react, usr = await ctx.bot.wait_for(
+                    "reaction_add", check=predicate(message, set_begin, push_left, push_right, set_end)
+                )
 
-            # wait for reaction and set page index
-            react, usr = await ctx.bot.wait_for(
-                "reaction_add", check=predicate(message, set_begin, push_left, push_right, set_end)
-            )
+                # set next page index
+                if react.emoji == far_left:
+                    index = 0
+                elif react.emoji == left:
+                    index -= 1
+                elif react.emoji == right:
+                    index += 1
+                elif react.emoji == far_right:
+                    index = len(self.pages) - 1
+                else:
+                    # invalid reaction, remove it
+                    await react.remove(usr)
 
-            # set next page index
-            if react.emoji == far_left:
-                index = 0
-            elif react.emoji == left:
-                index -= 1
-            elif react.emoji == right:
-                index += 1
-            elif react.emoji == far_right:
-                index = len(self.pages) - 1
-            else:
-                # invalid reaction, remove it
-                await react.remove(usr)
-
-            action = message.edit
+                action = message.edit
 
     @classmethod
     def from_embeds(cls, *pages: Sequence[discord.Embed]):
