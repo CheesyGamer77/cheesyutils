@@ -225,33 +225,27 @@ class Paginator:
         sequence: Sequence[Any],
         max_lines: int = 10,
         base_embed: discord.Embed = None,
-        title_fmt: str = "Page {}",
-        line_fmt: str = "{}",
         line_sep: str = "\n"
     ):
-        """Creates a new paginator from a list of strings
+        """Creates a new paginator from a list of items
 
         Parameters
         ----------
-        sequence : Sequence(str)
-            The sequence of strings to paginate through. Each string is given it's own line in the paginator
+        sequence : Sequence(Any)
+            The sequence of items to paginate through. Each item is stringified and given its own line in the paginator
         max_lines : int
             The maximum number of lines to have on each page.
             This defaults to `10`.
         base_embed : discord.Embed
-            The base embed to use for the sequence
-            If this is not supplied, an embed for each page will be created with the following properties:
+            The base embed to use for the sequence.
+            The title of the embed will automatically have each page number formatted for each page, if able
+            The description of the embed will have each item in the sequence formatted, if able
+            The footer of the embed will have the current page number and the total number of pages formatted, if able
+            If a base embed is not supplied, an embed for each page will be created with the following properties:
             - Title is "Page {page number}"
-            - Description is each string from `sequence` on each line separated by `line_sep`
+            - Description is each item from `sequence` on each line separated by `line_sep`
             - Color is `discord.Color.dark_theme()`
-        title_fmt : str
-            The title for each Discord embed
-            The page number is automatically formatted into the string, if able
-            This defaults to "Page {}"
-        line_fmt : str
-            The format to use for each line in the paginator
-            Each item in `sequence` is automatically formatted into the string for each line, if able
-            This defaults to "{}",
+            - Footer text is "Page {page_number}/{total_pages}"
         line_sep : str
             The line separator to use for each line in the paginator
             This defaults to "\\n"
@@ -260,14 +254,18 @@ class Paginator:
         if not base_embed:
             base_embed = discord.Embed(
                 title="Page {}",
+                description="{}",
                 color=discord.Color.dark_theme()
-            )
+            ).set_footer(text="Page {}/{}")
 
         c = cls()
-        for i, chunk in enumerate(Paginator.chunks(sequence, max_lines)):
+        pages = Paginator.chunks(sequence, max_lines)
+        for i, page in enumerate(pages):
             base_embed = base_embed.copy()
-            base_embed.title = title_fmt.format(i+1)
-            base_embed.description = line_sep.join([line_fmt.format(item) for item in chunk])
+            base_embed.title = base_embed.title.format(i+1)
+            base_embed.description = line_sep.join([base_embed.description.format(item) for item in page])
+            if base_embed.footer.text is not discord.Embed.Empty:
+                base_embed.footer.text = base_embed.footer.text.format(i, len(pages))
             c.pages.append(base_embed)
 
         return c
