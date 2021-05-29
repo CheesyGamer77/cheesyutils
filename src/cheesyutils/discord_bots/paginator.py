@@ -1,6 +1,6 @@
 import discord
 from discord.ext import commands
-from typing import Iterator, List, NoReturn, Optional, Sequence
+from typing import Any, Iterator, List, NoReturn, Optional, Sequence
 
 
 class Paginator:
@@ -197,11 +197,40 @@ class Paginator:
         c.pages = pages
         return c
 
-    @classmethod
-    def from_sequence(cls, sequence: Sequence[str], max_lines: int=10):
-        """Sets the sequence to paginate over
+    @staticmethod
+    def chunks(l, n):
+        """
+        Converts a sequence to a list of sub-lists of a maximum size
 
-        The sequence provided will be spliced into sublists of a maximum size (with thanks to https://stackoverflow.com/a/9671301)
+        The code for this function comes from https://stackoverflow.com/a/9671301
+
+        Parameters
+        ----------
+        l : list
+            The list to split into chunks
+        n : int
+            The maximum number of items for each sublist
+
+        Returns
+        -------
+        A list of lists, with each sublist being of maximum size `n`
+        """
+
+        n = max(1, n)
+        return (l[i:i+n] for i in range(0, len(l), n))
+
+    @classmethod
+    def from_sequence(
+        cls,
+        sequence: Sequence[Any],
+        *,
+        max_lines: int = 10,
+        base_embed: discord.Embed = None,
+        title_fmt: str = "Page {}",
+        line_fmt: str = "{}",
+        line_sep: str = "\n"
+    ):
+        """Creates a new paginator from a list of strings
 
         Parameters
         ----------
@@ -210,33 +239,32 @@ class Paginator:
         max_lines : int
             The maximum number of lines to have on each page.
             This defaults to `10`.
+        base_embed : discord.Embed
+            The base embed to use for the sequence
+            If this is not supplied, an embed for each page will be created with the following properties:
+            - Title is "Page {page number}"
+            - Description is each string from `sequence` on each line separated by `line_sep`
+            - Color is `discord.Color.dark_theme()`
+        title_fmt : str
+            The title for each Discord embed
+            The page number is automatically formatted into the string, if able
+            This defaults to "Page {}"
+        line_fmt : str
+            The format to use for each line in the paginator
+            Each item in `sequence` is automatically formatted into the string for each line, if able
+            This defaults to "{}"
         """
 
-        def chunks(l, n):
-            """
-            Converts a sequence to a list of sub-lists of a maximum size
-
-            The code for this function comes from https://stackoverflow.com/a/9671301
-
-            Parameters
-            ----------
-            l : list
-                The list to split into chunks
-            n : int
-                The maximum number of items for each sublist
-
-            Returns
-            -------
-            A list of lists, with each sublist being of maximum size `n`
-            """
-
-            n = max(1, n)
-            return (l[i:i+n] for i in range(0, len(l), n))
+        if not base_embed:
+            base_embed = discord.Embed(
+                title="Page {}",
+                color=discord.Color.dark_theme()
+            )
 
         c = cls()
-        c.pages = [
-            discord.Embed(title=f"Page {i+1}", description="\n".join([line for line in chunk]))
-            for i, chunk in enumerate(chunks(sequence, max_lines))
-        ]
+        for i, chunk in enumerate(Paginator.chunks(sequence, max_lines)):
+            base_embed.title = title_fmt.format(i+1)
+            base_embed.description = line_sep.join([line_fmt.format(item) for item in chunk])
+            c.pages.append(base_embed)
 
         return c
