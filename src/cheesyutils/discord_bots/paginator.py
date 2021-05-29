@@ -265,6 +265,7 @@ class Paginator:
 
         c = cls()
         for i, chunk in enumerate(Paginator.chunks(sequence, max_lines)):
+            base_embed = base_embed.copy()
             base_embed.title = title_fmt.format(i+1)
             base_embed.description = line_sep.join([line_fmt.format(item) for item in chunk])
             c.pages.append(base_embed)
