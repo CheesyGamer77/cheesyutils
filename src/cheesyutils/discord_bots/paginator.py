@@ -223,7 +223,6 @@ class Paginator:
     def from_sequence(
         cls,
         sequence: Sequence[Any],
-        *,
         max_lines: int = 10,
         base_embed: discord.Embed = None,
         title_fmt: str = "Page {}",
