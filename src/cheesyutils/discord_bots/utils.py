@@ -268,15 +268,15 @@ async def paginate(
     embed_title: str,
     line: str,
     sequence: list,
-    embed_color: Optional[discord.Color] = discord.Color.dark_theme(),
-    prefix: Optional[str] = "",
-    suffix: Optional[str] = "",
-    max_page_size: Optional[int] = 2048,
-    other_sequence: Optional[list] = None,
-    sequence_type_name: Optional[str] = None,
-    author_name: Optional[str] = None,
-    author_icon_url: Optional[str] = None,
-    count_format: Optional[str] = None
+    embed_color: discord.Color = discord.Color.dark_theme(),
+    prefix: str = "",
+    suffix: str = "",
+    max_page_size: int = 2048,
+    other_sequence: list = None,
+    sequence_type_name: str = None,
+    author_name: str = None,
+    author_icon_url: str = None,
+    count_format: str = None
 ):
     """Creates a paginating menu given a particular context
 
@@ -359,7 +359,6 @@ async def paginate(
     message = None
     action = ctx.send
     while True:
-        # this is probably going to fuck shit up
         embed = discord.Embed(
             title=embed_title,
             description=paginator.pages[index],
