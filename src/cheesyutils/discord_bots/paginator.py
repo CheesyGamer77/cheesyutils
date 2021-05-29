@@ -252,7 +252,10 @@ class Paginator:
         line_fmt : str
             The format to use for each line in the paginator
             Each item in `sequence` is automatically formatted into the string for each line, if able
-            This defaults to "{}"
+            This defaults to "{}",
+        line_sep : str
+            The line separator to use for each line in the paginator
+            This defaults to "\\n"
         """
 
         if not base_embed:
