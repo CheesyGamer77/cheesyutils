@@ -17,6 +17,11 @@ class Paginator:
         """
 
         self.pages.insert(index, page)
+    
+    def clear(self):
+        """Clears the paginator of all pages"""
+
+        self.pages = []
 
     def prepend_page(self, page: discord.Embed):
         """Adds a new page to the beginning of the paginator's pages
@@ -32,8 +37,10 @@ class Paginator:
     def add_page(self, page: discord.Embed):
         """Adds a new page to the end of the paginator's pages
 
-        NOTE: Using this method assumes that you will be creating each page manually,
-        ie. not via `Paginator.set_sequence`.
+        Parameters
+        ----------
+        page : discord.Embed
+            The embed to add at the end of the current pages
         """
 
         self.pages.append(page)
@@ -200,8 +207,8 @@ class Paginator:
         ----------
         sequence : Sequence(str)
             The sequence of strings to paginate through. Each string is given it's own line in the paginator
-        max_items : int
-            The maximum number of items/lines to have on each page.
+        max_lines : int
+            The maximum number of lines to have on each page.
             This defaults to `10`.
         """
 
