@@ -132,7 +132,7 @@ class Embed(discord.Embed):
         if len(name) > MAX_EMBED_AUTHOR_NAME_LENGTH:
             raise ValueError(f"Embed author name cannot exceed {MAX_EMBED_AUTHOR_NAME_LENGTH} characters in length")
     
-        e = super().set_author(name, url=url, icon_url=icon_url)
+        e = super().set_author(name=name, url=url, icon_url=icon_url)
         self._check_integrety()
         return e
     
