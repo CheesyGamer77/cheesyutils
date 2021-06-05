@@ -167,7 +167,7 @@ class Embed(discord.Embed):
             raise ValueError(f"Expected a discord.User, discord.Member, or discord.Guild but received {entity.__class__.__name__} instead")
     
     def add_field(self, *, name: str, value: Any, inline: bool=True) -> "Embed":
-        e = super().add_field(name, value, inline=inline)
+        e = super().add_field(name=name, value=value, inline=inline)
         self._check_integrety()
         return e
     
@@ -220,12 +220,12 @@ class Embed(discord.Embed):
             raise ValueError(f"Cannot add embed fields (not enough embed fields remaining)")
 
     def insert_field_at(self, index, *, name, value, inline) -> "Embed":
-        e = super().insert_field_at(index, name, value, inline=inline)
+        e = super().insert_field_at(index, name=name, value=value, inline=inline)
         self._check_integrety()
         return e
     
     def set_field_at(self, index, *, name, value, inline):
-        e = super().set_field_at(index, name, value, inline=inline)
+        e = super().set_field_at(index, name=name, value=value, inline=inline)
         self._check_integrety()
         return e
     
