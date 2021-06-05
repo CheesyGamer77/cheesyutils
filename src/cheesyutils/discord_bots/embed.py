@@ -77,8 +77,8 @@ class Embed(discord.Embed):
         else:
             raise ValueError(f"Expected a discord.User, discord.Member, or discord.Guild but received {entity.__class__.__name__} instead")
 
-    def set_footer(self, *, text: str=discord.embeds._EmptyEmbed, icon_url: str=discord.embeds._EmptyEmbed) -> "Embed":
-        if text is not discord.embeds._EmptyEmbed:
+    def set_footer(self, *, text: str=discord.embeds.EmptyEmbed, icon_url: str=discord.embeds.EmptyEmbed) -> "Embed":
+        if text is not discord.embeds.EmptyEmbed:
             if len(text) > MAX_EMBED_FOOTER_TEXT_LENGTH:
                 raise ValueError(f"Embed field text cannot exceed {MAX_EMBED_FOOTER_TEXT_LENGTH} in length")
         return super().set_footer(text=text, icon_url=icon_url)
@@ -128,7 +128,7 @@ class Embed(discord.Embed):
 
         return super().set_thumbnail(url)
 
-    def set_author(self, *, name, url=discord.embeds._EmptyEmbed, icon_url=discord.embeds._EmptyEmbed) -> "Embed":
+    def set_author(self, *, name, url=discord.embeds.EmptyEmbed, icon_url=discord.embeds.EmptyEmbed) -> "Embed":
         if len(name) > MAX_EMBED_AUTHOR_NAME_LENGTH:
             raise ValueError(f"Embed author name cannot exceed {MAX_EMBED_AUTHOR_NAME_LENGTH} characters in length")
     
