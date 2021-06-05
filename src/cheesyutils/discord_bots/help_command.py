@@ -1,6 +1,7 @@
 import discord
 from discord.ext import commands
-from .utils import get_base_embed, get_image_url
+from .embed import Embed
+from .utils import get_image_url
 
 
 class HelpCommand(commands.HelpCommand):
@@ -12,7 +13,7 @@ class HelpCommand(commands.HelpCommand):
         return f"`" + f"{self.clean_prefix}{command.qualified_name} {command.signature}".strip() + "`"
 
     async def send_bot_help(self, mapping):
-        embed = get_base_embed(
+        embed = Embed(
             title="Help",
             color=self.color,
             author=self.context.me
@@ -34,7 +35,7 @@ class HelpCommand(commands.HelpCommand):
         await self.get_destination().send(embed=embed)
 
     async def send_command_help(self, command: commands.Command):
-        embed = get_base_embed(
+        embed = Embed(
             title=f"Command Help: {command.name}",
             description=command.help if command.help is not None else "None",
             color=self.color,
@@ -69,7 +70,7 @@ class HelpCommand(commands.HelpCommand):
         await self.get_destination().send(embed=embed)
 
     async def send_group_help(self, group: commands.Group):
-        embed = get_base_embed(
+        embed = Embed(
             title=f"Group Help: {group.name}",
             description=group.help,
             color=self.color,
@@ -119,7 +120,7 @@ class HelpCommand(commands.HelpCommand):
         await self.get_destination().send(embed=embed)
 
     async def send_cog_help(self, cog: commands.Cog):
-        embed = get_base_embed(
+        embed = Embed(
             title=f"Cog Help: {cog.qualified_name}",
             description=cog.description,
             color=self.color,
@@ -144,7 +145,7 @@ class HelpCommand(commands.HelpCommand):
 
     async def on_help_command_error(self, ctx: commands.Context, error):
         if isinstance(error, commands.BadArgument):
-            embed = get_base_embed(
+            embed = Embed(
                 title="Error",
                 description=str(error),
                 author=ctx.me
