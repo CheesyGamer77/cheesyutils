@@ -1,6 +1,5 @@
 import cheesyutils
 import copy
-import datetime
 from inspect import Parameter
 import discord
 import re
@@ -10,7 +9,8 @@ from io import StringIO
 from textwrap import indent
 from traceback import format_exc
 from typing import Callable, List, Optional, Union
-from ..utils import get_base_embed, paginate
+from ..utils import paginate
+from ..embed import Embed
 
 
 class _ConversionFailed(commands.BadArgument):
@@ -48,7 +48,7 @@ class _CogConverter(commands.Converter):
         """
 
         cog = ctx.bot.get_cog(argument)
-        if cog is None:
+        if not cog:
             raise _ConversionFailed(argument, f"No cog named {argument!r} found")
         return cog
 
@@ -219,7 +219,7 @@ class Meta(commands.Cog):
 
         prefix = self.bot.database.execute("SELECT prefix FROM prefixes WHERE server_id = ?", parameters=(ctx.guild.id,))
         
-        embed = get_base_embed(title="Bot Prefix", author=ctx.guild)
+        embed = Embed(title="Bot Prefix", author=ctx.guild)
         embed.add_field(
             name="Prefix",
             value=prefix
@@ -361,7 +361,7 @@ class Meta(commands.Cog):
         Display's bot information
         """
 
-        embed = get_base_embed(
+        embed = Embed(
             title="Bot Stats",
             author=self.bot
         )
@@ -439,7 +439,7 @@ class Meta(commands.Cog):
         Returns info about a given cog
         """
 
-        embed = get_base_embed(
+        embed = Embed(
             title=f"Cog Info - {cog.qualified_name}",
             description=cog.description if cog.description != "" else "(No Description Provided)",
             color=self.bot.color,
