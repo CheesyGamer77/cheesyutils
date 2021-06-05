@@ -1,5 +1,4 @@
 import aiohttp
-import aiosqlite
 import asyncio
 import discord
 import os
@@ -10,6 +9,7 @@ from .help_command import HelpCommand
 from .cogs.meta import Meta
 from .utils import *
 from .database import *
+from .embed import Embed
 
 
 class DiscordBot(commands.Bot):
@@ -272,7 +272,7 @@ class DiscordBot(commands.Bot):
             The color to make the embed
         """
 
-        embed = get_base_embed(description=f"{emoji} {content}", color=color, timestamp=discord.Embed.Empty)
+        embed = Embed(description=f"{emoji} {content}", color=color, timestamp=discord.Embed.Empty)
         await ctx.send(embed=embed)
 
     async def send_success_embed(self, ctx: discord.abc.Messageable, content: str):
