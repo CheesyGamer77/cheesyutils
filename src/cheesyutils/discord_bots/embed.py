@@ -160,9 +160,9 @@ class Embed(discord.Embed):
         """
 
         if isinstance(entity, (discord.User, discord.Member)):
-            return self.set_author(text=str(entity), icon_url=entity.avatar_url)
+            return self.set_author(name=str(entity), icon_url=entity.avatar_url)
         elif isinstance(entity, discord.Guild):
-            return self.set_author(text=entity.name, icon_url=entity.icon_url)
+            return self.set_author(name=entity.name, icon_url=entity.icon_url)
         else:
             raise ValueError(f"Expected a discord.User, discord.Member, or discord.Guild but received {entity.__class__.__name__} instead")
     
