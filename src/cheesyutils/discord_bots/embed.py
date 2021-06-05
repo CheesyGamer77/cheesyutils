@@ -18,7 +18,7 @@ class Embed(discord.Embed):
         if footer:
             self.set_footer_from_entity(footer)
         if thumbnail:
-            self.set_image(url=thumbnail)
+            self.set_thumbnail(url=thumbnail)
         if image:
             self.set_image(url=image)
 
@@ -106,7 +106,7 @@ class Embed(discord.Embed):
         elif isinstance(url, discord.Guild):
             url = url.icon_url
 
-        return super().set_image(url)
+        return super().set_image(url=url)
     
     def set_thumbnail(self, *, url) -> "Embed":
         """Sets the thumbnail image for this particular embed.
@@ -126,7 +126,7 @@ class Embed(discord.Embed):
         The class instance.
         """
 
-        return super().set_thumbnail(url)
+        return super().set_thumbnail(url=url)
 
     def set_author(self, *, name, url=discord.embeds.EmptyEmbed, icon_url=discord.embeds.EmptyEmbed) -> "Embed":
         if len(name) > MAX_EMBED_AUTHOR_NAME_LENGTH:
