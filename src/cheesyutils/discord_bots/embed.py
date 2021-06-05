@@ -38,7 +38,7 @@ class Embed(discord.Embed):
     
     @colour.setter
     def colour(self, value: Union[discord.Colour, int, discord.User, discord.Member]):
-        if isinstance(value, (discord.Colour, discord.Embed.Empty)):
+        if isinstance(value, (discord.Colour, discord.embeds.EmptyEmbed)):
             self._colour = value
         elif isinstance(value, int):
             self._colour = discord.Colour(value=value)
@@ -77,8 +77,8 @@ class Embed(discord.Embed):
         else:
             raise ValueError(f"Expected a discord.User, discord.Member, or discord.Guild but received {entity.__class__.__name__} instead")
 
-    def set_footer(self, *, text: str=discord.Embed.Empty, icon_url: str=discord.Embed.Empty) -> "Embed":
-        if text is not discord.Embed.Empty:
+    def set_footer(self, *, text: str=discord.embeds.EmptyEmbed, icon_url: str=discord.embeds.EmptyEmbed) -> "Embed":
+        if text is not discord.embeds.EmptyEmbed:
             if len(text) > MAX_EMBED_FOOTER_TEXT_LENGTH:
                 raise ValueError(f"Embed field text cannot exceed {MAX_EMBED_FOOTER_TEXT_LENGTH} in length")
         return super().set_footer(text=text, icon_url=icon_url)
