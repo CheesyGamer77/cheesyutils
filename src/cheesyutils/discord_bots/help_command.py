@@ -12,16 +12,16 @@ class HelpCommand(commands.HelpCommand):
     def get_command_signature(self, command: commands.Command):
         return f"`" + f"{self.clean_prefix}{command.qualified_name} {command.signature}".strip() + "`"
 
-    async def get_bot_help_embed(self, ctx: commands.Context, mapping: Mapping[Optional[commands.Cog], List[commands.Command]]) -> discord.Embed:
+    async def send_bot_help(self, mapping):
         embed = get_base_embed(
             title="Help",
             color=self.color,
-            author=ctx.me
+            author=self.context.me
         )
 
         embed.set_footer(
             text=f"Run {self.clean_prefix}help <command> to get more information about a command or command group",
-            icon_url=get_image_url(ctx.me)
+            icon_url=get_image_url(self.context.me)
         )
 
         for cog, cog_commands in mapping.items():
@@ -32,19 +32,19 @@ class HelpCommand(commands.HelpCommand):
                 cog_name = getattr(cog, "qualified_name", "No Category")
                 embed.add_field(name=cog_name, value="\n".join(command_signatures), inline=False)
 
-        return embed
+        await self.get_destination().send(embed=embed)
 
-    def get_command_help_embed(self, ctx: commands.Context, command: commands.Command) -> discord.Embed:
+    async def send_command_help(self, command: commands.Command):
         embed = get_base_embed(
             title=f"Command Help: {command.name}",
             description=command.help if command.help is not None else "None",
             color=self.color,
-            author=ctx.me
+            author=self.context.me
         )
 
         embed.set_footer(
             text=f"Run {self.clean_prefix}help <command> to get more information about a command or command group",
-            icon_url=get_image_url(ctx.me)
+            icon_url=get_image_url(self.context.me)
         )
 
         if len(command.aliases) > 0:
@@ -66,20 +66,20 @@ class HelpCommand(commands.HelpCommand):
                 value=command.usage,
                 inline=False
             )
-        
-        return embed
 
-    def get_group_help_embed(self, ctx: commands.Context, group: commands.Group):
+        await self.get_destination().send(embed=embed)
+
+    async def send_group_help(self, group: commands.Group):
         embed = get_base_embed(
             title=f"Group Help: {group.name}",
             description=group.help,
             color=self.color,
-            author=ctx.me
+            author=self.context.me
         )
 
         embed.set_footer(
             text=f"Run {self.clean_prefix}help <command> to get more information about a command or command group",
-            icon_url=get_image_url(ctx.me)
+            icon_url=get_image_url(self.context.me)
         )
 
         if len(group.aliases) > 0:
@@ -117,19 +117,19 @@ class HelpCommand(commands.HelpCommand):
                 inline=False
             )
         
-        return embed
+        await self.get_destination().send(embed=embed)
 
-    def get_cog_help_embed(self, ctx: commands.Context, cog: commands.Cog):
+    async def send_cog_help(self, cog: commands.Cog):
         embed = get_base_embed(
             title=f"Cog Help: {cog.qualified_name}",
             description=cog.description,
             color=self.color,
-            author=ctx.me
+            author=self.context.me
         )
 
         embed.set_footer(
             text=f"Run {self.clean_prefix}help <command> to get more information about a command or command group",
-            icon_url=get_image_url(ctx.me)
+            icon_url=get_image_url(self.context.me)
         )
 
         cmds = cog.get_commands()
@@ -140,22 +140,7 @@ class HelpCommand(commands.HelpCommand):
                 inline=False
             )
         
-        return embed
 
-    async def send_bot_help(self, mapping):
-        embed = await self.get_bot_help_embed(self.context, mapping)
-        await self.get_destination().send(embed=embed)
-
-    async def send_command_help(self, command: commands.Command):
-        embed = self.get_command_help_embed(self.context, command)
-        await self.get_destination().send(embed=embed)
-
-    async def send_group_help(self, group: commands.Group):
-        embed = self.get_group_help_embed(self.context, group)
-        await self.get_destination().send(embed=embed)
-
-    async def send_cog_help(self, cog: commands.Cog):
-        embed = self.get_cog_help_embed(self.context, cog)
         await self.get_destination().send(embed=embed)
 
     async def on_help_command_error(self, ctx: commands.Context, error):
