@@ -6,10 +6,10 @@ from typing import Any, Union
 
 class Embed(discord.Embed):
     def __init__(self, **kwargs):
-        author = kwargs.pop("author")
-        footer = kwargs.pop("footer")
-        thumbnail = kwargs.pop("thumbnail")
-        image = kwargs.pop("image")
+        author = kwargs.pop("author", None)
+        footer = kwargs.pop("footer", None)
+        thumbnail = kwargs.pop("thumbnail", None)
+        image = kwargs.pop("image", None)
 
         super().__init__(**kwargs)
 
