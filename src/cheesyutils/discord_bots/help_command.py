@@ -1,6 +1,5 @@
 import discord
 from discord.ext import commands
-from typing import List, Mapping, Optional
 from .utils import get_base_embed, get_image_url
 
 
