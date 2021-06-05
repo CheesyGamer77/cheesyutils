@@ -126,6 +126,11 @@ class Embed(discord.Embed):
         The class instance.
         """
 
+        if isinstance(url, (discord.User, discord.Member)):
+            url = url.avatar_url
+        elif isinstance(url, discord.Guild):
+            url = url.icon_url
+
         return super().set_thumbnail(url=url)
 
     def set_author(self, *, name, url=discord.embeds.EmptyEmbed, icon_url=discord.embeds.EmptyEmbed) -> "Embed":
