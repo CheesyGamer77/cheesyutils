@@ -2,7 +2,6 @@ import datetime
 import discord
 from discord.ext import commands
 from typing import List, Optional, Union
-from .constants import *
 
 
 def get_discord_color(color: Union[discord.Color, tuple, str]) -> discord.Color:
@@ -59,6 +58,35 @@ def get_image_url(entity: Union[discord.abc.User, discord.Guild, discord.Asset, 
         return entity
     else:
         raise TypeError(f"Expected discord.abc.User, discord.Guild, or string, got \"{entity.__class__.__name__}\" instead")
+
+
+def role_permissions_in(channel: discord.abc.GuildChannel, role: discord.Role) -> discord.Permissions:
+    """Returns a role's permissions in a particular channel
+
+    This function is based off of a previous solution for gathering role channel permissions.
+    Original Solution: https://gist.github.com/e-Lisae/f20c579ab70304a73506e5565631b753
+
+    Parameters
+    ----------
+    channel : discord.abc.GuildChannel
+        The channel to get the role's permissions for
+    role : discord.Role
+        The role to get the permissions for
+    
+    Returns
+    -------
+    A `discord.Permissions` object representing the role's permissions
+    """
+
+    # gather base permissions
+    permissions = discord.Permissions.none()
+    permissions.value |= role.permissions.value
+
+    # merge with role permission overwrites
+    pair = channel.overwrites_for(role).pair()
+    permissions.value = (permissions.value & ~pair[1].value) | pair[0].value
+
+    return permissions
 
 
 def truncate(string: str, max_length: int, end: Optional[str] = "...") -> str:
