@@ -217,8 +217,15 @@ class Meta(commands.Cog):
         This is equivalent to just running the `prefix` command on its own
         """
 
-        prefix = await self.bot.database.execute("SELECT prefix FROM prefixes WHERE server_id = ?", parameters=(ctx.guild.id,))
-        
+        prefix = await self.bot.database.query_first("SELECT prefix FROM prefixes WHERE server_id = ?", parameters=(ctx.guild.id,))
+        if not prefix:
+            prefix = await self.bot.database.execute(
+                "INSERT OR REPLACE INTO prefixes(server_id) VALUES (?)",
+                parameters=(ctx.guild.id,)
+            )
+
+            return await self.get_prefix_command(ctx)
+
         embed = Embed(title="Bot Prefix", author=ctx.guild)
         embed.add_field(
             name="Prefix",
@@ -366,7 +373,7 @@ class Meta(commands.Cog):
 
         embed = Embed(
             title="Bot Stats",
-            author=self.bot.user
+            author=ctx.me
         ).add_field(
             name=f"Libraries",
             value=f"<:discord_py:840064300923879434> [discord.py](https://github.com/Rapptz/discord.py) - `{discord.__version__}`\n"
