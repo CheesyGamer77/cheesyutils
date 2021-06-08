@@ -1,5 +1,6 @@
 import aiohttp
 import asyncio
+import datetime
 import discord
 import os
 import re
@@ -80,7 +81,7 @@ class DiscordBot(commands.Bot):
         # set database
         self.database = Database(database)
 
-        self.is_actually_ready = False
+        self.start_time = None
 
         super().__init__(
             command_prefix=commands.when_mentioned_or(prefix),
@@ -96,10 +97,8 @@ class DiscordBot(commands.Bot):
         self.add_cog(Meta(self))
 
     async def on_ready(self):
-        if not self.is_actually_ready:
-            # get current server id's
-            #server_ids = await self.database.query_all(Table("config").sql)
-            self.is_actually_ready = True
+        if not self.start_time:
+            self.start_time = datetime.datetime.utcnow()
             print(f"{self.user} is ready!")
     
     def run(self, token: Union[os.PathLike, str]):

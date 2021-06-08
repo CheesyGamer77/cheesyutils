@@ -366,14 +366,15 @@ class Meta(commands.Cog):
 
         embed = Embed(
             title="Bot Stats",
-            author=self.bot
-        )
-
-        embed.add_field(
+            author=self.bot.user
+        ).add_field(
             name=f"Libraries",
             value=f"<:discord_py:840064300923879434> [discord.py](https://github.com/Rapptz/discord.py) - `{discord.__version__}`\n"
                   f"<:cheese_think:787739437715030066> [cheesyutils](https://github.com/CheesyGamer77/cheesyutils) - `{cheesyutils.__version__}`",
             inline=False
+        ).add_field(
+            name="Uptime",
+            value=human_timedelta(self.bot.start_time, suffix=False)
         )
 
         await ctx.send(embed=embed)
