@@ -1,7 +1,8 @@
 import datetime
 import discord
+from dateutil import relativedelta
 from discord.ext import commands
-from typing import List, Optional, Union
+from typing import Any, List, Optional, Union
 
 
 def get_discord_color(color: Union[discord.Color, tuple, str]) -> discord.Color:
@@ -141,6 +142,126 @@ def chunkify_string(string: str, max_length: int) -> List[str]:
     """
 
     return [string[0+i:max_length+i] for i in range(0, len(string), max_length)]
+
+class plural:
+    """
+    Helper class to convert a particular value to a plural form, if needed
+
+    Original solution comes from RoboDanny
+    (https://github.com/Rapptz/RoboDanny/blob/0dfa21599da76e84c2f8e7fde0c132ec93c840a8/cogs/utils/formats.py#L1-L10)
+    """
+
+    def __init__(self, value: Any):
+        self.value = value
+    def __format__(self, format_spec: str):
+        singular, sep, plural = format_spec.partition('|')
+        plural = plural or f'{singular}s'
+        v = self.value
+        if abs(v) != 1:
+            return f'{v} {plural}'
+        return f'{v} {singular}'
+
+def human_timedelta(dt: datetime.datetime, *, source: datetime.datetime=None, accuracy: int=3, brief: bool=False, suffix: bool=True) -> str:
+    """
+    Returns a human readable time delta since a particular datetime object
+    Original solution comes from RoboDanny
+    (https://github.com/Rapptz/RoboDanny/blob/0dfa21599da76e84c2f8e7fde0c132ec93c840a8/cogs/utils/time.py#L185-L284)
+
+    Parameters
+    ----------
+    dt : datetime.datetime
+        The datetime object to get the human time delta since
+    source : datetime.datetime
+        The source datetime object to use as the latest point in time for the time delta
+        This defaults to the current UTC time.
+    accuracy: int
+        The desired accuracy for the time delta. The number of desired time units to provide corresponds to the accuracy given
+        This defaults to `3`
+    brief : bool
+        If `True`, only provides each time unit's count for the output, and not the time units themselves
+        This defaults to `False`
+    suffix : bool
+        Whether to include the "ago" suffix in the output for past time deltas
+        This defaults to `True`
+    
+    Returns
+    -------
+    A string representing the human readable time delta
+    """
+
+    def human_join(seq, delim=', ', final='or'):
+        size = len(seq)
+        if size == 0:
+            return ''
+
+        if size == 1:
+            return seq[0]
+
+        if size == 2:
+            return f'{seq[0]} {final} {seq[1]}'
+
+        return delim.join(seq[:-1]) + f' {final} {seq[-1]}'
+
+    now = source or datetime.datetime.utcnow()
+    # Microsecond free zone
+    now = now.replace(microsecond=0)
+    dt = dt.replace(microsecond=0)
+
+    # This implementation uses relativedelta instead of the much more obvious
+    # divmod approach with seconds because the seconds approach is not entirely
+    # accurate once you go over 1 week in terms of accuracy since you have to
+    # hardcode a month as 30 or 31 days.
+    # A query like "11 months" can be interpreted as "!1 months and 6 days"
+    if dt > now:
+        delta = relativedelta(dt, now)
+        suffix = ''
+    else:
+        delta = relativedelta(now, dt)
+        suffix = ' ago' if suffix else ''
+
+    attrs = [
+        ('year', 'y'),
+        ('month', 'mo'),
+        ('day', 'd'),
+        ('hour', 'h'),
+        ('minute', 'm'),
+        ('second', 's'),
+    ]
+
+    output = []
+    for attr, brief_attr in attrs:
+        elem = getattr(delta, attr + 's')
+        if not elem:
+            continue
+
+        if attr == 'day':
+            weeks = delta.weeks
+            if weeks:
+                elem -= weeks * 7
+                if not brief:
+                    output.append(format(plural(weeks), 'week'))
+                else:
+                    output.append(f'{weeks}w')
+
+        if elem <= 0:
+            continue
+
+        if brief:
+            output.append(f'{elem}{brief_attr}')
+        else:
+            output.append(format(plural(elem), attr))
+
+    if accuracy is not None:
+        output = output[:accuracy]
+
+    if len(output) == 0:
+        return 'now'
+    else:
+        if not brief:
+            return human_join(output, final='and') + suffix
+        else:
+            return ' '.join(output) + suffix
+
 
 async def paginate(
     ctx: commands.Context,
