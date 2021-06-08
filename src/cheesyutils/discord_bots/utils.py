@@ -1,6 +1,6 @@
 import datetime
 import discord
-from dateutil import relativedelta
+from dateutil.relativedelta import relativedelta
 from discord.ext import commands
 from typing import Any, List, Optional, Union
 
