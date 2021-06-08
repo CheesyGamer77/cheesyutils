@@ -1,15 +1,15 @@
 import cheesyutils
 import copy
-from inspect import Parameter
 import discord
 import re
+import urllib.parse
 from contextlib import redirect_stdout
 from discord.ext import commands
 from io import StringIO
 from textwrap import indent
 from traceback import format_exc
 from typing import Callable, List, Optional, Union
-from ..utils import paginate
+from ..utils import paginate, human_timedelta
 from ..embed import Embed
 
 
@@ -217,7 +217,7 @@ class Meta(commands.Cog):
         This is equivalent to just running the `prefix` command on its own
         """
 
-        prefix = self.bot.database.execute("SELECT prefix FROM prefixes WHERE server_id = ?", parameters=(ctx.guild.id,))
+        prefix = await self.bot.database.execute("SELECT prefix FROM prefixes WHERE server_id = ?", parameters=(ctx.guild.id,))
         
         embed = Embed(title="Bot Prefix", author=ctx.guild)
         embed.add_field(
