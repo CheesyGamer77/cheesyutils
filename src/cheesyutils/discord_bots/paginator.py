@@ -217,7 +217,7 @@ class Paginator:
         """
 
         n = max(1, n)
-        return (l[i:i+n] for i in range(0, len(l), n))
+        return [l[i:i+n] for i in range(0, len(l), n)]
 
     @classmethod
     def from_sequence(
@@ -253,19 +253,24 @@ class Paginator:
 
         if not base_embed:
             base_embed = discord.Embed(
-                title="Page {}",
-                description="{}",
-                color=discord.Color.dark_theme()
+            title="Page {}",
+            description="{}",
+            color=discord.Color.dark_theme()
             ).set_footer(text="Page {}/{}")
 
         c = cls()
         pages = Paginator.chunks(sequence, max_lines)
         for i, page in enumerate(pages):
-            base_embed = base_embed.copy()
-            base_embed.title = base_embed.title.format(i+1)
-            base_embed.description = line_sep.join([base_embed.description.format(item) for item in page])
-            if base_embed.footer.text is not discord.Embed.Empty:
-                base_embed.footer.text = base_embed.footer.text.format(i, len(pages))
-            c.pages.append(base_embed)
+            embed = base_embed.copy()
+        
+            # update title and description for new page
+            embed.title = base_embed.title.format(i+1)
+            embed.description = line_sep.join([base_embed.description.format(item) for item in page])
 
+            # update footer
+            if base_embed.footer.text is not discord.Embed.Empty:
+                embed.set_footer(text=embed.footer.text.format(i+1, len(pages)))
+
+            c.pages.append(embed)
+            
         return c
