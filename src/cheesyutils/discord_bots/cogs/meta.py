@@ -222,7 +222,7 @@ class Meta(commands.Cog):
         embed = Embed(title="Bot Prefix", author=ctx.guild)
         embed.add_field(
             name="Prefix",
-            value=prefix
+            value=urllib.parse.unquote_plus(prefix)
         )
 
         await ctx.send(embed=embed)
@@ -243,7 +243,10 @@ class Meta(commands.Cog):
         The prefix must be a sequence containing up to four alphanumeric characters or special characters
         """
 
-        await self.bot.database.execute("INSERT OR REPLACE INTO prefixes(server_id, prefix) VALUES (?, ?)", parameters=(ctx.guild.id, prefix))
+        await self.bot.database.execute(
+            "INSERT OR REPLACE INTO prefixes(server_id, prefix) VALUES (?, ?)",
+            parameters=(ctx.guild.id, urllib.parse.quote_plus(prefix))
+        )
         await self.bot.send_success_embed(ctx, f"Prefix set to {prefix!r}")
 
     @set_prefix_command.error
