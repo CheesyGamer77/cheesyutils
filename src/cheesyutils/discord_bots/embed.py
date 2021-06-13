@@ -3,13 +3,31 @@ from .constants import *
 from .utils import chunkify_string
 from typing import Any, Union
 
-
 class Embed(discord.Embed):
     def __init__(self, **kwargs):
+        """Creates a new Embed object
+
+        This takes the exact same parameters as a `discord.Embed`, with a few additions:
+        - Providing the `author` keyword argument with a `discord.User`, `discord.Guild`, `discord.ClientUser`, or `discord.Guild` will attempt
+        to have the embed's author set to that particular entity
+        - Providing the `footer` keyword argument with a `discord.User`, `discord.Guild`, `discord.ClientUser`, or `discord.Guild` will attempt
+        to have the embed's footer set to that particular entity
+        - Providing the `image` keyword argument with a `discord.User`, `discord.Guild`, `discord.ClientUser`, or `discord.Guild` will attempt
+        to have the embed's footer set to that particular entity
+        - Providing the `thumbnail` keyword argument with a `discord.User`, `discord.Guild`, `discord.ClientUser`, or `discord.Guild` will attempt
+        to have the embed's footer set to that particular entity
+        
+        This embed implementation also offers integrity checking of length limited fields in order to prevent HTTP 400's.
+        Providing the `safe` keyword argument with a boolean will determine whether this integrity checking is enabled or not.
+        By default, this is set to `True` (enabled)
+        """
+
         author = kwargs.pop("author", None)
         footer = kwargs.pop("footer", None)
         thumbnail = kwargs.pop("thumbnail", None)
         image = kwargs.pop("image", None)
+        
+        self.safe: bool = kwargs.pop("safe", True)
 
         super().__init__(**kwargs)
 
@@ -22,15 +40,16 @@ class Embed(discord.Embed):
         if image:
             self.set_image(url=image)
 
-    def _check_integrety(self):
-        if len(self) > MAX_EMBED_TOTAL_LENGTH:
-            raise ValueError(f"Embed total length cannot exceed {MAX_EMBED_TOTAL_LENGTH} in length")
-        elif len(self.title) > MAX_EMBED_TITLE_LENGTH:
-            raise ValueError(f"Embed title cannot exceed {MAX_EMBED_TITLE_LENGTH} in length")
-        elif len(self.description) > MAX_EMBED_DESCRIPTION_LENGTH:
-            raise ValueError(f"Embed description cannot exceed {MAX_EMBED_DESCRIPTION_LENGTH} in length")
-        elif len(self.fields) > MAX_EMBED_FIELD_COUNT:
-            raise ValueError(f"Embed field count cannot exceed {MAX_EMBED_FIELD_COUNT}")
+    def _check_integrity(self):
+        if self.safe:
+            if len(self) > MAX_EMBED_TOTAL_LENGTH:
+                raise ValueError(f"Embed total length cannot exceed {MAX_EMBED_TOTAL_LENGTH} in length")
+            elif len(self.title) > MAX_EMBED_TITLE_LENGTH:
+                raise ValueError(f"Embed title cannot exceed {MAX_EMBED_TITLE_LENGTH} in length")
+            elif len(self.description) > MAX_EMBED_DESCRIPTION_LENGTH:
+                raise ValueError(f"Embed description cannot exceed {MAX_EMBED_DESCRIPTION_LENGTH} in length")
+            elif len(self.fields) > MAX_EMBED_FIELD_COUNT:
+                raise ValueError(f"Embed field count cannot exceed {MAX_EMBED_FIELD_COUNT}")
     
     @property
     def colour(self):
@@ -47,11 +66,11 @@ class Embed(discord.Embed):
         else:
             raise TypeError('Expected discord.Colour, int, discord.Member, discord.User, or Embed.Empty but received %s instead.' % value.__class__.__name__)
 
-    def set_footer_from_entity(self, entity: Union[discord.User, discord.Member, discord.Guild]):
+    def set_footer_from_entity(self, entity: Union[discord.User, discord.Member, discord.ClientUser, discord.Guild]):
         """Sets this embed footer from a particular Discord entity. For general usage, refer to the `set_footer` function.
 
-        If this is a discord.User or discord.Member, the footer will be of the user's name and avatar.
-        If this is a discord.Guild, the footer will be of the guild's name and icon.
+        If this is a `discord.User`, `discord.Member`, or `discord.ClientUser`, the footer will be of the user's name and avatar.
+        If this is a `discord.Guild`, the footer will be of the guild's name and icon.
         Otherwise, this will raise a `ValueError`.
 
         This function returns the class instance for fluent-style chaining.
@@ -83,17 +102,17 @@ class Embed(discord.Embed):
                 raise ValueError(f"Embed field text cannot exceed {MAX_EMBED_FOOTER_TEXT_LENGTH} in length")
         return super().set_footer(text=text, icon_url=icon_url)
 
-    def set_image(self, *, url) -> "Embed":
+    def set_image(self, *, url: Union[discord.User, discord.Member, discord.ClientUser]) -> "Embed":
         """Sets the image for this particular embed.
 
-        If the url supplied is a `discord.User` or `discord.Member`, the url will be converted to the user's/member's avatar.
+        If the url supplied is a `discord.User`, `discord.Member`, or `discord.ClientUser`, the url will be converted to the user's avatar.
         If the url supplied is a `discord.Guild`, the url will be converted to the guild's icon url.
 
         This function returns the class instance for fluent-style chaining.
 
         Parameters
         ----------
-        url : Any
+        url : Union(discord.User, discord.Member, discord.ClientUser, discord.Guild, str)
             The url to use for the image. Only HTTP(S) is supported
         
         Returns
@@ -101,14 +120,14 @@ class Embed(discord.Embed):
         The class instance.
         """
 
-        if isinstance(url, (discord.User, discord.Member)):
+        if isinstance(url, (discord.User, discord.Member, discord.ClientUser)):
             url = url.avatar_url
         elif isinstance(url, discord.Guild):
             url = url.icon_url
 
         return super().set_image(url=url)
     
-    def set_thumbnail(self, *, url) -> "Embed":
+    def set_thumbnail(self, *, url: Union[discord.User, discord.Member, discord.ClientUser, discord.Guild, str]) -> "Embed":
         """Sets the thumbnail image for this particular embed.
 
         If the url supplied is a `discord.User` or `discord.Member`, the url will be converted to the user's/member's avatar.
@@ -118,9 +137,9 @@ class Embed(discord.Embed):
 
         Parameters
         ----------
-        url : Any
-            The url to use for the thumbnail image. Only HTTP(S) is supported
-        
+        url : Union(discord.User, discord.Member, discord.ClientUser, discord.Guild, str)
+            The url to use for the thumbnail image. Only HTTP(S) is supported.
+
         Returns
         -------
         The class instance.
@@ -138,13 +157,13 @@ class Embed(discord.Embed):
             raise ValueError(f"Embed author name cannot exceed {MAX_EMBED_AUTHOR_NAME_LENGTH} characters in length")
     
         e = super().set_author(name=name, url=url, icon_url=icon_url)
-        self._check_integrety()
+        self._check_integrity()
         return e
     
-    def set_author_from_entity(self, entity: Union[discord.User, discord.Member, discord.Guild]) -> "Embed":
+    def set_author_from_entity(self, entity: Union[discord.User, discord.Member, discord.ClientUser, discord.Guild]) -> "Embed":
         """Sets this embed's author from a particular Discord entity. For general usage, refer to the `set_author` function.
 
-        If this is a `discord.User` or `discord.Member`, the author will be of the user's name and avatar.
+        If this is a `discord.User`, `discord.Member`, or `discord.ClientUser`, the author will be of the user's name and avatar.
         If this is a `discord.Guild`, the author will be of the guild's name and icon.
         Otherwise, this will raise a `ValueError`.
 
@@ -152,7 +171,7 @@ class Embed(discord.Embed):
 
         Parameters
         ----------
-        entity : Union(discord.User, discord.Member, discord.Guild)
+        entity : Union(discord.User, discord.Member, discord.ClientUser, discord.Guild)
             The Discord entity to set the embed author from.
         
         Raises
@@ -164,7 +183,7 @@ class Embed(discord.Embed):
         The class instance.
         """
 
-        if isinstance(entity, (discord.User, discord.Member)):
+        if isinstance(entity, (discord.User, discord.Member, discord.ClientUser)):
             return self.set_author(name=str(entity), icon_url=entity.avatar_url)
         elif isinstance(entity, discord.Guild):
             return self.set_author(name=entity.name, icon_url=entity.icon_url)
@@ -173,7 +192,7 @@ class Embed(discord.Embed):
     
     def add_field(self, *, name: str, value: Any, inline: bool=True) -> "Embed":
         e = super().add_field(name=name, value=value, inline=inline)
-        self._check_integrety()
+        self._check_integrity()
         return e
     
     def add_fields(self, base_name: str, name_fmt: str, value: str, inline: bool=True) -> "Embed":
@@ -226,11 +245,13 @@ class Embed(discord.Embed):
 
     def insert_field_at(self, index, *, name, value, inline) -> "Embed":
         e = super().insert_field_at(index, name=name, value=value, inline=inline)
-        self._check_integrety()
+        self._check_integrity()
         return e
     
     def set_field_at(self, index, *, name, value, inline):
         e = super().set_field_at(index, name=name, value=value, inline=inline)
-        self._check_integrety()
+        self._check_integrity()
         return e
     
+
+e = Embed()
