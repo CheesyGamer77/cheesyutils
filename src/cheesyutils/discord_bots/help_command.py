@@ -112,7 +112,7 @@ class HelpCommand(commands.HelpCommand):
 
         if len(group.commands) > 0:
             embed.add_field(
-                name="Commands",
+                name="Subcommands/subgroups",
                 value=", ".join(sorted([f"`{command.name}`" for command in group.commands], key=lambda s: s)),
                 inline=False
             )
