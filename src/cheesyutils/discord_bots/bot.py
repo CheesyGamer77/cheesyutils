@@ -8,6 +8,7 @@ from discord.ext import commands
 from typing import Any, Awaitable, Callable, Optional, Union
 from .help_command import HelpCommand
 from .cogs.meta import Meta
+from .context import Context
 from .utils import *
 from .database import *
 from .embed import Embed
@@ -70,7 +71,7 @@ class DiscordBot(commands.Bot):
         self.color = get_discord_color(color)
 
         # set intents
-        intents = discord.Intents.default()
+        intents: discord.Intents = discord.Intents.default()
         intents.members = members_intent
         intents.presences = presences_intent
 
@@ -509,3 +510,6 @@ class DiscordBot(commands.Bot):
                 return None
         else:
             return member
+    
+    async def get_context(self, message: discord.Message):
+        return await super().get_context(message, cls=Context)
