@@ -1,9 +1,9 @@
-.. CheesyUtils documentation master file, created by
+.. Cheesyutils documentation master file, created by
    sphinx-quickstart on Sat Apr 10 16:43:50 2021.
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-Welcome to CheesyUtils's documentation!
+Welcome to cheesyutils's documentation!
 =======================================
 
 .. toctree::
