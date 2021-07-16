@@ -501,7 +501,7 @@ class Meta(commands.Cog):
     @commands.bot_has_permissions(send_messages=True)
     @_cog_group.command(name="reload")
     async def _cog_reload_command(self, ctx: commands.Context, cog: str):
-        if await self._execute_extension_actions(ctx, cog, self.bot.unload_extension, self.bot.load_extension):
+        if await self._execute_extension_actions(ctx, cog, self.bot.reload_extension):
             await self.bot.send_success_embed(ctx, f"Cog `{cog}` was reloaded!")
 
     async def _execute_extension_actions(self, ctx: commands.Context, cog: str, *funcs: List[Callable[[str], None]]):
