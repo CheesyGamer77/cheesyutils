@@ -373,7 +373,8 @@ class Meta(commands.Cog):
 
         embed = Embed(
             title="Bot Stats",
-            author=ctx.me
+            author=ctx.me,
+            color=self.bot.color
         ).add_field(
             name=f"Libraries",
             value=f"<:discord_py:840064300923879434> [discord.py](https://github.com/Rapptz/discord.py) - `{discord.__version__}`\n"
