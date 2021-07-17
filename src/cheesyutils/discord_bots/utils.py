@@ -3,6 +3,7 @@ import discord
 from dateutil.relativedelta import relativedelta
 from discord.ext import commands
 from typing import Any, List, Optional, Union
+from enum import Enum
 
 
 def get_discord_color(color: Union[discord.Color, tuple, str]) -> discord.Color:
@@ -261,6 +262,40 @@ def human_timedelta(dt: datetime.datetime, *, source: datetime.datetime=None, ac
             return human_join(output, final='and') + suffix
         else:
             return ' '.join(output) + suffix
+
+
+class TimestampStyle(Enum):
+    """
+    https://discord.com/developers/docs/reference#message-formatting-timestamp-styles
+    """
+
+    short_time = "t"
+    long_time = "T"
+    short_date = "d"
+    long_date = "D"
+    short_date_time = "f" # default
+    long_date_time = "F"
+    relative = "R"
+
+
+def get_timestamp_mention(dt: datetime.datetime, *, style: TimestampStyle=None) -> str:
+    """Returns a timestamp mention corresponding to a particular datetime object.
+
+    A style may be optionally provided.
+    
+    Parameters
+    ----------
+    dt: datetime.datetime
+        The datetime object to use for the timestamp mention
+    style : TimestampStyle
+        Optional style to use for the mention.
+        This defaults to `TimestampStyle.short_date_time`
+    """
+
+    if not style:
+        style = TimestampStyle.short_date_time
+    
+    return f"<t:{int(dt.timestamp())}:{style.value}>"
 
 
 async def paginate(
