@@ -9,8 +9,9 @@ from io import StringIO
 from textwrap import indent
 from traceback import format_exc
 from typing import Callable, List, Optional, Union
-from ..utils import paginate, human_timedelta
+from ..utils import human_timedelta
 from ..embed import Embed
+from ..paginator import Paginator
 
 
 class _ConversionFailed(commands.BadArgument):
@@ -431,16 +432,15 @@ class Meta(commands.Cog):
         else:
             raise _ConversionFailed(cogs_or_extensions, f"{cogs_or_extensions!r} is not a valid mode")
 
-        # TODO - still uses old pagination
-        await paginate(
-            ctx,
-            embed_title="Cog List",
-            line="`{0}`",
-            sequence=sequence,
-            max_page_size=1024,
-            sequence_type_name="cogs",
-            author_name=str(self.bot.user),
-            author_icon_url=self.bot.user.avatar_url
+        await Paginator.from_sequence(
+            sequence,
+            base_embed=Embed(
+                title="Cog List",
+                description="`{0}`"
+            ).set_author(
+                name=str(self.bot.user),
+                icon_url=self.bot.user.avatar_url
+            )
         )
 
     @commands.is_owner()
