@@ -253,21 +253,11 @@ class Embed(discord.Embed):
         self._check_integrity()
         return e
     
-    def __remove_all_dict_keys_except(self, d: dict, key: Any) -> dict:
-        # no, you cannot just iterate over each dict key and delete it on the fly
-        # python gets very angry at you and raises a RuntimeError if you try to do that
-
-        data = d
-        to_remove = []
-        for k in data.keys():
-            if k != key:
-                to_remove.append(k)
-        
-        # now we can actually delete the keys
-        for k in to_remove:
-            del data[k]
-
-        return data
+    def __remove_all_dict_keys_except(self, d: dict, key: Any):
+        if key in d:
+            d.__init__({key: d[key]})
+        else:
+            d.clear()
 
     def to_dict(self) -> dict:
         # clean extra keys that discord.py (annoyingly) puts in
