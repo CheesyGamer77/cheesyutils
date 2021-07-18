@@ -75,38 +75,47 @@ class Context(commands.Context):
         
         await self.send(embed=self.get_fail_embed(content))
 
-    async def reply_success(self, content: str):
+    async def reply_success(self, content: str, mention_author: bool = True):
         """Replies to the original message with an embed communicating successful completion
 
         Parameters
         ----------
         content : str
             The message to set as the success embed's description
+        mention_author : bool
+            Whether to mention the context message's author in the reply.
+            This defaults to `True`.
         """
 
-        await self.reply(embed=self.get_success_embed(content))
+        await self.reply(embed=self.get_success_embed(content), mention_author=mention_author)
     
-    async def reply_warning(self, content: str):
+    async def reply_warning(self, content: str, mention_author: bool = True):
         """Replies to the original message with an embed communicating a warning
 
         Parameters
         ----------
         content : str
             The message to set as the warning embed's description
+        mention_author : bool
+            Whether to mention the context message's author in the reply.
+            This defaults to `True`.
         """
 
-        await self.reply(embed=self.get_warning_embed(content))
+        await self.reply(embed=self.get_warning_embed(content), mention_author=mention_author)
     
-    async def reply_fail(self, content: str):
+    async def reply_fail(self, content: str, mention_author: bool = True):
         """Replies to the original message with an embed communicating that a failure has occured
 
         Parameters
         ----------
         content : str
             The message to set as the fail embed's description
+        mention_author : bool
+            Whether to mention the context message's author in the reply.
+            This defaults to `True`.
         """
 
-        await self.reply(embed=self.get_fail_embed(content))
+        await self.reply(embed=self.get_fail_embed(content), mention_author=mention_author)
 
     async def prompt(self, base_embed: Embed, *, timeout: float=60.0, delete_after: bool=False, user: Union[discord.Member, discord.User]=None) -> Optional[bool]:
         """Starts an interactive confirmation prompt via reactions
