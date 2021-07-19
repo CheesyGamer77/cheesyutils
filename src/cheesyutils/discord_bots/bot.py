@@ -511,5 +511,5 @@ class DiscordBot(commands.Bot):
         else:
             return member
     
-    async def get_context(self, message: discord.Message):
-        return await super().get_context(message, cls=Context)
+    async def get_context(self, message: discord.Message, cls=Context):
+        return await super().get_context(message, cls=cls)
