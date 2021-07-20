@@ -158,63 +158,6 @@ class DiscordBot(commands.Bot):
 
         # defaults to parent method should the above fail
         return super().get_emoji(id)
-
-    async def paginate(
-        self,
-        ctx: commands.Context,
-        embed_title: str,
-        line: str,
-        sequence: list,
-        prefix: Optional[str] = "",
-        suffix: Optional[str] = "",
-        max_page_size: Optional[int] = 2048,
-        other_sequence: Optional[list] = None,
-        sequence_type_name: Optional[str] = None,
-        author_name: Optional[str] = None,
-        author_icon_url: Optional[str] = None,
-        count_format: Optional[str] = None
-    ):
-        """Creates a paginating menu given a particular context
-
-        Warning: The following permissions are required for the bot to utilize pagination
-        - Add Reactions
-        - Manage Messages
-
-        Parameters
-        ----------
-        ctx : commands.Context
-            The context in which the pagination is to take place
-        embed_title : str
-            The title to use for the embed
-        line : str
-            The format string to use for each line in a page. Each item in `sequence` gets its own line in a page
-        sequence : list
-            The sequence in which pagination should take place
-        embed_color : Optional discord.Color
-            The embed color to use. Defaults to `discord.Color.dark_theme()`
-        prefix : Optional str
-            The string to prepend to the beginning of the page (defaults to an empty string)
-        suffix : Optional str
-            The string to append to the end of the page (defaults to an empty string)
-        max_page_size : Optional int
-            The maximum number of characters per page (defaults to 2048)
-        other_sequence : Optional list
-            The other sequence to iterate over (mainly for the embed's footer text, defaults to be equal to `sequence`)
-        sequence_type_name : Optional str
-            The name of the other sequence (mainly for the embed's footer text, defaults to "items")
-        author_name : Optional str
-            The name to use for the embed author (defaults to the current guild's name)
-        author_icon_url : Optional str
-            The icon url to use for the embed author (defaults to the current guild's icon)
-        count_format : Optional str
-            The string to prepend to each line (used for a count)
-        """
-
-        await paginate(
-            ctx, embed_title, line, sequence, self.color,
-            prefix, suffix, max_page_size, other_sequence,
-            sequence_type_name, author_name, author_icon_url, count_format
-        )
     
     @staticmethod
     def get_discord_status(status: str) -> discord.Status:
