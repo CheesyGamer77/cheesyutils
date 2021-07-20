@@ -12,6 +12,7 @@ from typing import Callable, List, Optional, Union
 from ..utils import human_timedelta
 from ..embed import Embed
 from ..paginator import Paginator
+from ..context import Context
 
 
 class _ConversionFailed(commands.BadArgument):
@@ -33,12 +34,12 @@ class _ConversionFailed(commands.BadArgument):
 class _CogConverter(commands.Converter):
     """Converter to convert strings into cogs"""
 
-    async def convert(self, ctx: commands.Context, argument: str) -> commands.Cog:
+    async def convert(self, ctx: Context, argument: str) -> commands.Cog:
         """Attempts to convert a string into a named cog OR the cog's file extension
 
         Parameters
         ----------
-        ctx : commands.Context
+        ctx : Context
             The invokation context, usually fed from an executing command
         argument : str
             The argument to attempt to convert into a named cog
@@ -57,7 +58,7 @@ class _CogConverter(commands.Converter):
 class _ExtensionConverter(commands.Converter):
     """Converter to convert strings into extensions"""
     
-    async def convert(self, ctx: commands.Context, argument: str):
+    async def convert(self, ctx: Context, argument: str):
         try:
             return ctx.bot.extensions[argument]
         except KeyError:
@@ -67,14 +68,14 @@ class _ExtensionConverter(commands.Converter):
 class _ValidPrefix(commands.Converter):
     """Converter for converting strings into valid prefixes"""
 
-    async def convert(self, ctx: commands.Context, argument: str):
+    async def convert(self, ctx: Context, argument: str):
         """Attempts to convert a given argument into a valid prefix
 
         A valid prefix is a sequence of alphanumeric and special characters
 
         Parameters
         ----------
-        ctx : commands.Context
+        ctx : Context
             The invokation context, usually fed from an executing command
         argument : str
             The argument to attempt to convert into a valid prefix
@@ -95,12 +96,12 @@ class _AnyChannel(commands.Converter):
     Taken from the `GlobalChannel` converter from https://github.com/Rapptz/RoboDanny/blob/644e588851bccca24f220b74f0ef091c48299757/cogs/admin.py
     """
 
-    async def convert(self, ctx: commands.Context, argument: str):
+    async def convert(self, ctx: Context, argument: str):
         """Attempts to convert any Discord ID to a valid Discord Text Channel, Voice Channel, etc that the bot can fetch/see
 
         Parameters
         ----------
-        ctx : commands.Context
+        ctx : Context
             The invokation context, usually fed from an executing command
         argument : str
             The argument to attempt to convert into a Discord channel
@@ -139,7 +140,7 @@ def _can_use_custom_prefixes():
     The decorator does this by checking if a sqlite table with the name of `prefixes` exists within the bot's database
     """
 
-    async def predicate(ctx: commands.Context):
+    async def predicate(ctx: Context):
         tables = await ctx.bot.database.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='prefixes'")
         return len(tables) != 0
     
@@ -182,7 +183,7 @@ class Meta(commands.Cog):
         # remove `foo`
         return content.strip('` \n')
 
-    async def _on_prefix_commands_error(self, ctx: commands.Context, error):
+    async def _on_prefix_commands_error(self, ctx: Context, error):
         if isinstance(error, _NoCustomPrefixesAllowed):
             await self.bot.send_fail_embed(ctx, "This bot is not able to utilize custom prefixes")
         elif isinstance(error, _ConversionFailed):
@@ -193,7 +194,7 @@ class Meta(commands.Cog):
     @commands.has_permissions(manage_guild=True)
     @commands.bot_has_permissions(send_messages=True, embed_links=True)
     @commands.group(name="prefix")
-    async def prefix_group(self, ctx: commands.Context):
+    async def prefix_group(self, ctx: Context):
         """
         Commands for getting/modifying the bot's prefix for the current guild
 
@@ -203,7 +204,7 @@ class Meta(commands.Cog):
         pass
 
     @prefix_group.error
-    async def on_prefix_group_error(self, ctx: commands.Context, error):
+    async def on_prefix_group_error(self, ctx: Context, error):
         await self._on_prefix_commands_error(ctx, error)
 
     @commands.guild_only()
@@ -211,7 +212,7 @@ class Meta(commands.Cog):
     @commands.has_permissions(manage_guild=True)
     @commands.bot_has_permissions(send_messages=True, embed_links=True)
     @prefix_group.command(name="get")
-    async def get_prefix_command(self, ctx: commands.Context):
+    async def get_prefix_command(self, ctx: Context):
         """
         Returns the bot's prefix for the current guild
 
@@ -236,7 +237,7 @@ class Meta(commands.Cog):
         await ctx.send(embed=embed)
 
     @get_prefix_command.error
-    async def on_get_prefix_command_error(self, ctx: commands.Context, error):
+    async def on_get_prefix_command_error(self, ctx: Context, error):
         await self._on_prefix_commands_error(ctx, error)
 
     @commands.guild_only()
@@ -244,7 +245,7 @@ class Meta(commands.Cog):
     @commands.has_permissions(manage_guild=True)
     @commands.bot_has_permissions(send_messages=True, embed_links=True)
     @prefix_group.command(name="set")
-    async def set_prefix_command(self, ctx: commands.Context, prefix: _ValidPrefix):
+    async def set_prefix_command(self, ctx: Context, prefix: _ValidPrefix):
         """
         Sets the bot's prefix for the current guild
 
@@ -258,14 +259,14 @@ class Meta(commands.Cog):
         await self.bot.send_success_embed(ctx, f"Prefix set to {prefix!r}")
 
     @set_prefix_command.error
-    async def on_set_prefix_command_error(self, ctx: commands.Context, error):
+    async def on_set_prefix_command_error(self, ctx: Context, error):
         await self._on_prefix_commands_error(ctx, error)
 
     @commands.guild_only()
     @commands.has_permissions(manage_guild=True)
     @commands.bot_has_permissions(send_messages=True, embed_links=True)
     @prefix_group.command(name="reset")
-    async def reset_prefix_command(self, ctx: commands.Context):
+    async def reset_prefix_command(self, ctx: Context):
         """
         Resets the bot's prefix for the current guild
         """
@@ -281,13 +282,13 @@ class Meta(commands.Cog):
         await self.bot.send_success_embed(ctx, f"Prefix reset from {old_prefix!r} to {new_prefix!r}")
 
     @reset_prefix_command.error
-    async def on_reset_prefix_command_error(self, ctx: commands.Context, error):
+    async def on_reset_prefix_command_error(self, ctx: Context, error):
         await self._on_prefix_commands_error(ctx, error)
 
     @commands.is_owner()
     @commands.bot_has_permissions(send_messages=True)
     @commands.command()
-    async def execute(self, ctx: commands.Context, *, content: str):
+    async def execute(self, ctx: Context, *, content: str):
         """
         Evaluates some python code
         Gracefully stolen from Rapptz ->
@@ -367,7 +368,7 @@ class Meta(commands.Cog):
     @commands.is_owner()
     @commands.bot_has_permissions(send_messages=True, embed_links=True)
     @commands.command(name="stats")
-    async def stats_command(self, ctx: commands.Context):
+    async def stats_command(self, ctx: Context):
         """
         Display's bot information
         """
@@ -390,7 +391,7 @@ class Meta(commands.Cog):
 
     @commands.is_owner()
     @commands.command(name="sudo")
-    async def sudo_command(self, ctx: commands.Context, channel: Optional[_AnyChannel], user: Union[discord.Member, discord.User], *, command: str):
+    async def sudo_command(self, ctx: Context, channel: Optional[_AnyChannel], user: Union[discord.Member, discord.User], *, command: str):
         """
         Executes a command as another user, in another channel
 
@@ -410,7 +411,7 @@ class Meta(commands.Cog):
     @commands.is_owner()
     @commands.bot_has_permissions(send_messages=True)
     @commands.group(name="cog")
-    async def _cog_group(self, ctx: commands.Context):
+    async def _cog_group(self, ctx: Context):
         """
         Cog related commands and utilities
         """
@@ -420,7 +421,7 @@ class Meta(commands.Cog):
     @commands.is_owner()
     @commands.bot_has_permissions(send_messages=True)
     @_cog_group.command(name="list")
-    async def _cog_list_command(self, ctx: commands.Context, cogs_or_extensions: Optional[str]="cogs"):
+    async def _cog_list_command(self, ctx: Context, cogs_or_extensions: Optional[str]="cogs"):
         """
         Lists all cogs currently running on the bot
         """
@@ -446,7 +447,7 @@ class Meta(commands.Cog):
     @commands.is_owner()
     @commands.bot_has_permissions(send_messages=True, embed_links=True)
     @_cog_group.command(name="info")
-    async def _cog_info_command(self, ctx: commands.Context, cog: _CogConverter):
+    async def _cog_info_command(self, ctx: Context, cog: _CogConverter):
         """
         Returns info about a given cog
         """
@@ -479,7 +480,7 @@ class Meta(commands.Cog):
     @commands.is_owner()
     @commands.bot_has_permissions(send_messages=True, embed_links=True)
     @_cog_group.command(name="load")
-    async def _cog_load_command(self, ctx: commands.Context, cog: str):
+    async def _cog_load_command(self, ctx: Context, cog: str):
         """
         Loads a particular cog
         """
@@ -490,7 +491,7 @@ class Meta(commands.Cog):
     @commands.is_owner()
     @commands.bot_has_permissions(send_messages=True, embed_links=True)
     @_cog_group.command(name="unload")
-    async def _cog_unload_command(self, ctx: commands.Context, cog: str):
+    async def _cog_unload_command(self, ctx: Context, cog: str):
         """
         Unloads a particular cog
         """
@@ -501,18 +502,18 @@ class Meta(commands.Cog):
     @commands.is_owner()
     @commands.bot_has_permissions(send_messages=True)
     @_cog_group.command(name="reload")
-    async def _cog_reload_command(self, ctx: commands.Context, cog: str):
+    async def _cog_reload_command(self, ctx: Context, cog: str):
         if await self._execute_extension_actions(ctx, cog, self.bot.reload_extension):
             await self.bot.send_success_embed(ctx, f"Cog `{cog}` was reloaded!")
 
-    async def _execute_extension_actions(self, ctx: commands.Context, cog: str, *funcs: List[Callable[[str], None]]):
+    async def _execute_extension_actions(self, ctx: Context, cog: str, *funcs: List[Callable[[str], None]]):
         """Executes a list of extension actions
 
         This is used as a method of abstracting extension error handling away from the cog commands
 
         Parameters
         ----------
-        ctx : discord.commands.Context
+        ctx : discord.Context
             The invocation context
         cog : str
             The name of the cog to execute the actions on
@@ -536,6 +537,6 @@ class Meta(commands.Cog):
             await self.bot.send_fail_embed(ctx, f"Cog `{e.name}` initiation failed: `{e.original.__class__.__name__}`")
 
     @_cog_list_command.error
-    async def on_cog_list_command_error(self, ctx: commands.Context, error):
+    async def on_cog_list_command_error(self, ctx: Context, error):
         if isinstance(error, _ConversionFailed):
             await self.bot.send_fail_embed(ctx, f"Invalid list mode {error.argument!r}")
