@@ -256,7 +256,7 @@ class Meta(commands.Cog):
             "INSERT OR REPLACE INTO prefixes(server_id, prefix) VALUES (?, ?)",
             parameters=(ctx.guild.id, urllib.parse.quote_plus(prefix))
         )
-        await self.bot.send_success_embed(ctx, f"Prefix set to {prefix!r}")
+        await ctx.reply_success(f"Prefix set to {prefix!r}")
 
     @set_prefix_command.error
     async def on_set_prefix_command_error(self, ctx: Context, error):
@@ -279,7 +279,7 @@ class Meta(commands.Cog):
 
         new_prefix = await self.bot.get_prefix(ctx.message)
 
-        await self.bot.send_success_embed(ctx, f"Prefix reset from {old_prefix!r} to {new_prefix!r}")
+        await ctx.reply_success(f"Prefix reset from {old_prefix!r} to {new_prefix!r}")
 
     @reset_prefix_command.error
     async def on_reset_prefix_command_error(self, ctx: Context, error):
@@ -486,7 +486,7 @@ class Meta(commands.Cog):
         """
 
         if await self._execute_extension_actions(ctx, cog, self.bot.load_extension):
-            await self.bot.send_success_embed(ctx, f"Cog `{cog}` was loaded!")
+            await ctx.reply_success(f"Cog `{cog}` was loaded!")
     
     @commands.is_owner()
     @commands.bot_has_permissions(send_messages=True, embed_links=True)
@@ -497,14 +497,14 @@ class Meta(commands.Cog):
         """
 
         if await self._execute_extension_actions(ctx, cog, self.bot.unload_extension):
-            await self.bot.send_success_embed(ctx, f"Cog `{cog}` was unloaded!")
+            await ctx.reply_success(f"Cog `{cog}` was unloaded!")
     
     @commands.is_owner()
     @commands.bot_has_permissions(send_messages=True)
     @_cog_group.command(name="reload")
     async def _cog_reload_command(self, ctx: Context, cog: str):
         if await self._execute_extension_actions(ctx, cog, self.bot.reload_extension):
-            await self.bot.send_success_embed(ctx, f"Cog `{cog}` was reloaded!")
+            await ctx.reply_success(f"Cog `{cog}` was reloaded!")
 
     async def _execute_extension_actions(self, ctx: Context, cog: str, *funcs: List[Callable[[str], None]]):
         """Executes a list of extension actions
