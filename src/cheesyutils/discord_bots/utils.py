@@ -290,6 +290,10 @@ def get_timestamp_mention(dt: datetime.datetime, *, style: TimestampStyle=None) 
     style : TimestampStyle
         Optional style to use for the mention.
         This defaults to `TimestampStyle.short_date_time`
+    
+    Returns
+    -------
+    A timestamp mention string for the datetime object
     """
 
     if not style:
