@@ -68,8 +68,20 @@ def bot_owner_or_permissions(**perms):
 
     has_perms = commands.has_permissions(**perms).predicate
     is_owner = commands.is_owner().predicate
-    
-    async def predicate(ctx: commands.Context) -> bool:
+
+    async def predicate(ctx: Context) -> bool:
         return await has_perms(ctx) or await is_owner(ctx)
+    
+    return commands.check(predicate)
+
+
+def bot_owner_or_guild_moderator():
+    """A check that determines if a user is the bot owner or if the bot owner is a guild moderator"""
+
+    is_mod = is_guild_moderator().predicate
+    is_owner = commands.is_owner().predicate
+
+    async def predicate(ctx: Context) -> bool:
+        return await is_mod(ctx) or await is_owner(ctx)
     
     return commands.check(predicate)
