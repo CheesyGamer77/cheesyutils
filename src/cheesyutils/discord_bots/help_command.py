@@ -1,10 +1,21 @@
 import discord
 from discord.ext import commands
+from typing import Optional
 from .embed import Embed
 from .utils import get_image_url
+from .context import Context
+from .checks import is_guild_moderator
 
 
 class HelpCommand(commands.HelpCommand):
+    """A help command that uses Embeds
+
+    Attributes
+    ----------
+    color : discord.Color
+        The color to use for the help command embeds
+    """
+
     def __init__(self, color: discord.Color):
         self.color = color
         super().__init__()
@@ -153,3 +164,17 @@ class HelpCommand(commands.HelpCommand):
             await ctx.send(embed=embed)
         else:
             raise error
+
+
+class ModOnlyHelpCommand(HelpCommand):
+    """A help command that's disabled for all members
+    except for those who are guild moderators or the bot owner
+
+    This inherits from `HelpCommand`
+    """
+
+    async def command_callback(self, ctx: Context, *, command: Optional[str] = None):
+        # ignores the command for those who are neither the bot owner or a guild moderator
+        
+        if await commands.check_any(commands.is_owner(), is_guild_moderator()).predicate(ctx):
+            return await super().command_callback(ctx, command=command)
