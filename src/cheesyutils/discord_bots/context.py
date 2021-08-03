@@ -163,6 +163,8 @@ class Context(commands.Context):
                 await message.delete()
             except discord.HTTPException:
                 pass
+        
+        return msg.content
 
     async def prompt_confirmation(self, base_embed: Embed, *, timeout: float=60.0, delete_after: bool=False, user: Union[discord.Member, discord.User]=None) -> Optional[bool]:
         """Starts an interactive confirmation prompt via reactions
