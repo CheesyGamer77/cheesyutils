@@ -2,6 +2,7 @@ import asyncio
 import discord
 from discord.ext import commands
 from typing import Optional, Union
+from cheesyutils.discord_bots.errors import PromptTimedout
 from .embed import Embed
 
 
@@ -116,8 +117,54 @@ class Context(commands.Context):
         """
 
         await self.reply(embed=self.get_fail_embed(content), mention_author=mention_author)
+    
+    reply_error = reply_fail
 
-    async def prompt(self, base_embed: Embed, *, timeout: float=60.0, delete_after: bool=False, user: Union[discord.Member, discord.User]=None) -> Optional[bool]:
+    async def prompt_string(self, base_embed: Embed, *, timeout: float=60.0, delete_after: bool=False, user: Union[discord.Member, discord.User]=None) -> str:
+        """Prompts a user for a string
+
+        This is done by taking the `content` from a user's message when prompted
+
+        Parameters
+        ----------
+        base_embed : Embed
+            The embed to send as the prompt
+        timeout : float
+            The ammount of seconds before the prompt times out.
+            This defaults to `60.0`
+        delete_after : bool
+            Whether to delete the prompt message after a string
+            is submitted. This defaults to `False`
+        user : Union[discord.Member, discord.User]
+            The user to prompt. Only strings from this user will be accepted.
+            This default's to the author of the context's message
+        
+        Raises
+        ------
+        `PromptTimedOut` if the prompt timed-out
+        """
+
+        if not user:
+            user = self.message.author
+
+        message: discord.Message = await self.send(embed=base_embed)
+
+        def check(m: discord.Message) -> bool:
+            return m.author.id == user.id and m.channel.id == self.channel.id
+
+        try:
+            msg: discord.Message = await self.bot.wait_for("message", check=check, timeout=timeout)
+        except asyncio.TimeoutError:
+            raise PromptTimedout(timeout)
+        
+        # try to delete prompt if needed
+        if delete_after:
+            try:
+                await message.delete()
+            except discord.HTTPException:
+                pass
+
+    async def prompt_confirmation(self, base_embed: Embed, *, timeout: float=60.0, delete_after: bool=False, user: Union[discord.Member, discord.User]=None) -> Optional[bool]:
         """Starts an interactive confirmation prompt via reactions
 
         This will eventually be refactored to use message components instead
