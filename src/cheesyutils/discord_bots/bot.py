@@ -30,6 +30,7 @@ class DiscordBot(commands.Bot):
             activity: Optional[str] = None,
             loop: Optional[asyncio.BaseEventLoop] = None,
             custom_emojis: Optional[dict] = None,
+            help_command: Optional[commands.HelpCommand] = None,
             *args, **kwargs
     ):
         """Defines a new Discord Bot
@@ -65,6 +66,9 @@ class DiscordBot(commands.Bot):
             The asyncio event loop to set for the bot (defaults to the value returned by `asyncio.get_event_loop()`)
         custom_emojis : Optional dict
             A dictionary who's string key corresponds to a particular Discord emoji string. Used for `Discord.Bot.get_emoji`
+        help_command : Optional commands.HelpCommand
+            The help command to use for the bot.
+            This defaults to the `HelpCommand` defined in `cheesyutils.discord_bots.help_command`.
         """
 
         self.loop = loop or asyncio.get_event_loop()
@@ -89,7 +93,7 @@ class DiscordBot(commands.Bot):
             intents=intents,
             activity=discord.Game(name=activity),
             status=self.get_discord_status(status),
-            help_command=HelpCommand(self.color),
+            help_command=HelpCommand(self.color) if not help_command else help_command,
             *args, **kwargs
         )
 
