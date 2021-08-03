@@ -43,6 +43,8 @@ class IntegerRequired(ConversionFailed):
     """Raised when a integer parameter is required instead of another type
 
     Usually raised by the `RangedInteger` converter
+
+    This inherits from `ConversionFailed`
     """
 
     pass
@@ -59,6 +61,8 @@ class PromptError(commands.CommandError):
 
 class PromptTimedout(PromptError):
     """Raised when a prommpt timed out
+
+    This inherits from `PromptError`
 
     Attributes
     ----------
