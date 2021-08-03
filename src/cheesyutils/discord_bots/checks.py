@@ -8,8 +8,9 @@ def bot_owner_or_in_guild(*guilds: discord.Object):
 
     is_owner = commands.is_owner().predicate
 
-    async def predicate(ctx: Context):
+    async def predicate(ctx: Context) -> bool:
         return (ctx.guild and ctx.guild.id in guilds) or await is_owner(ctx)
+
     return commands.check(predicate)
 
 
@@ -25,7 +26,7 @@ def is_guild_moderator():
     guild_only = commands.guild_only().predicate
     perms = commands.has_guild_permissions(manage_messages=True, kick_members=True, ban_members=True).predicate
 
-    async def predicate(ctx: Context):
+    async def predicate(ctx: Context) -> bool:
         return await guild_only(ctx) and await perms(ctx)
     
     return commands.check(predicate)
@@ -40,7 +41,7 @@ def is_moderator():
     guild_only = commands.guild_only().predicate
     perms = commands.has_permissions(manage_messages=True, kick_members=True, ban_members=True).predicate
 
-    async def predicate(ctx: Context):
+    async def predicate(ctx: Context) -> bool:
         return await guild_only(ctx) and await perms(ctx)
     
     return commands.check(predicate)
@@ -56,7 +57,7 @@ def bot_can_send_embeds():
 
     perms = commands.has_permissions(send_messages=True, embed_links=True).predicate
 
-    async def predicate(ctx: Context):
+    async def predicate(ctx: Context) -> bool:
         return await perms(ctx)
     
     return commands.check(predicate)
@@ -67,6 +68,7 @@ def bot_owner_or_permissions(**perms):
 
     has_perms = commands.has_permissions(**perms).predicate
     is_owner = commands.is_owner().predicate
+    
     async def predicate(ctx: commands.Context) -> bool:
         return await has_perms(ctx) or await is_owner(ctx)
     
